@@ -6,7 +6,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from .database import get_stats, init_db, record_result
+from .database import get_stats, init_db, record_judgment, record_result
 from .diagnosis import RAMEN_TYPES, diagnose, maps_url, x_share_url
 from .models import DiagnosisInput
 
@@ -83,6 +83,17 @@ async def result(
 @app.get("/about", response_class=HTMLResponse)
 async def about(request: Request):
     return templates.TemplateResponse(request=request, name="about.html")
+
+
+@app.get("/hidden-confession", response_class=HTMLResponse)
+async def hidden_confession(request: Request):
+    return templates.TemplateResponse(request=request, name="hidden_confession.html")
+
+
+@app.post("/hidden-judgment", response_class=HTMLResponse)
+async def hidden_judgment(request: Request):
+    record_judgment("sleep")
+    return templates.TemplateResponse(request=request, name="hidden_result.html")
 
 
 @app.get("/stats", response_class=HTMLResponse)

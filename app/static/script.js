@@ -27,6 +27,9 @@ setInterval(updateClock, 30000);
 $$("[data-stats-link]").forEach((link) => {
   link.href = `/stats?hour=${new Date().getHours()}`;
 });
+$$("form[data-auto-submit]").forEach((form) => {
+  setTimeout(() => form.submit(), Number(form.dataset.autoSubmit));
+});
 
 const revealObserver = new IntersectionObserver(
   (entries) => entries.forEach((entry) => {
@@ -249,7 +252,7 @@ if (shareCertificate) {
     shareGuide.textContent = "タップ後、共有先の一覧から「X」を選んでください。画像も一緒に渡されます。";
   } else if (supportsImageClipboard) {
     shareButtonLabel.textContent = "画像をコピーしてXを開く";
-    shareGuide.textContent = "Xが開いたら投稿欄を押し、Ctrl+V（Macは⌘V）で画像を貼り付けます。";
+    shareGuide.textContent = "Xが開いたらCtrl+V（Macは⌘V）で画像を貼り付けます";
   } else {
     shareButtonLabel.textContent = "画像を保存してXを開く";
     shareGuide.textContent = "保存されたPNGを、開いたXの投稿画面で画像追加してください。";

@@ -12,6 +12,7 @@ def test_stats_track_verdicts_and_ramen_types(tmp_path: Path):
         database.record_result("conditional", "味噌", 23)
         database.record_result("conditional", "味噌", 22)
         database.record_result("full", "醤油", 12)
+        database.record_judgment("sleep")
         stats = database.get_stats(23)
     finally:
         if original is None:
@@ -19,8 +20,9 @@ def test_stats_track_verdicts_and_ramen_types(tmp_path: Path):
         else:
             os.environ["RAMEN_DB_PATH"] = original
 
-    assert stats["total"] == 3
+    assert stats["total"] == 4
     assert stats["results"]["conditional"] == 2
+    assert stats["results"]["sleep"] == 1
     assert stats["ramen"]["味噌"] == 2
     assert stats["ramen_total"] == 2
     assert stats["time_bucket"] == "night"

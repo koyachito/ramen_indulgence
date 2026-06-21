@@ -93,6 +93,20 @@ def record_result(result_type: str, ramen_type: str, current_hour: int) -> None:
         conn.commit()
 
 
+def record_judgment(result_type: str) -> None:
+    """Record a judgment that has no associated ramen selection."""
+    with closing(sqlite3.connect(db_path())) as conn:
+        conn.execute(
+            """
+            INSERT INTO diagnosis_counts (result_type, count)
+            VALUES (?, 1)
+            ON CONFLICT(result_type) DO UPDATE SET count = count + 1
+            """,
+            (result_type,),
+        )
+        conn.commit()
+
+
 def get_stats(current_hour: int | None = None) -> dict[str, object]:
     hour = datetime.now().hour if current_hour is None else current_hour
     bucket = time_bucket(hour)

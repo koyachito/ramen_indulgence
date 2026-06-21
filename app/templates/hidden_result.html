@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}今日は寝ろ | ラーメン免罪符{% endblock %}
+{% block content %}
+<section class="sleep-result">
+  <p class="sleep-kicker">SECRET JUDGMENT</p>
+  <img src="{{ url_for('static', path='images/prayer.png') }}" alt="静かに祈るシスター">
+  <div class="sleep-verdict">
+    <small>本日の特別判決</small>
+    <h1>今日は寝ろ</h1>
+    <p>ラーメン欲については、明日の昼へ移送する。</p>
+  </div>
+  <a class="button retry-button" href="/">懺悔室へ戻る</a>
+</section>
+{% endblock %}

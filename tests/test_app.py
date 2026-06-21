@@ -61,3 +61,13 @@ def test_posting_diagnosis_returns_certificate():
     assert "あなたのラーメン欲は、ここに赦されました。" in response.text
     assert "share-certificate" in response.text
     assert "味噌ラーメン" in response.text
+
+
+def test_hidden_command_skips_questions_and_records_sleep_judgment():
+    trial = asyncio.run(request("GET", "/hidden-confession"))
+    result = asyncio.run(request("POST", "/hidden-judgment"))
+    assert trial.status_code == 200
+    assert "審議中..." in trial.text
+    assert "data-auto-submit" in trial.text
+    assert result.status_code == 200
+    assert "今日は寝ろ" in result.text
