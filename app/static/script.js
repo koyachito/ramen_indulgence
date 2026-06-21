@@ -9,21 +9,20 @@ function updateClock() {
   if (hour) hour.value = now.getHours();
   if (month) month.value = now.getMonth() + 1;
   if (day) day.value = now.getDate();
-  if ($("#live-clock")) {
-    $("#live-clock").textContent = now.toLocaleTimeString("ja-JP", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-    $("#live-date").textContent = now.toLocaleDateString("ja-JP", {
+  const issuedAt = $("#issued-at");
+  if (issuedAt) {
+    issuedAt.textContent = now.toLocaleString("ja-JP", {
       year: "numeric",
       month: "long",
       day: "numeric",
-      weekday: "short",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   }
 }
 updateClock();
 setInterval(updateClock, 30000);
+
 $$("[data-stats-link]").forEach((link) => {
   link.href = `/stats?hour=${new Date().getHours()}`;
 });
@@ -31,16 +30,20 @@ $$("form[data-auto-submit]").forEach((form) => {
   setTimeout(() => form.submit(), Number(form.dataset.autoSubmit));
 });
 
-const revealObserver = new IntersectionObserver(
-  (entries) => entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add("is-visible");
-      revealObserver.unobserve(entry.target);
-    }
-  }),
-  { threshold: 0.12 }
-);
-$$(".reveal").forEach((element) => revealObserver.observe(element));
+if ("IntersectionObserver" in window) {
+  const revealObserver = new IntersectionObserver(
+    (entries) => entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("is-visible");
+        revealObserver.unobserve(entry.target);
+      }
+    }),
+    { threshold: 0.12 },
+  );
+  $$(".reveal").forEach((element) => revealObserver.observe(element));
+} else {
+  $$(".reveal").forEach((element) => element.classList.add("is-visible"));
+}
 
 $$("[data-count]").forEach((element) => {
   const target = Number(element.dataset.count);
@@ -54,85 +57,227 @@ $$("[data-count]").forEach((element) => {
   requestAnimationFrame(tick);
 });
 
-const form = $("#diagnosis-form");
-const progress = $("#progress-bar");
-if (form && progress) {
+const QUESTION_MESSAGES = {
+  meals: {
+    prompt: ["thinking.png", "まず確認します。今日、すでに何食食べましたか？"],
+    reactions: {
+      0: ["worry.png", "むしろ食べてください！ラーメン以前に、まず食事です！"],
+      1: ["thinking.png", "まだ余地がありますね。話を続けましょう。"],
+      2: ["thinking.png", "一般的な食生活の範囲です。落ち着いて審議できます。"],
+      3: ["worry.png", "すでに三食……慎重な判断が必要です。"],
+      4: ["angry.png", "記憶があいまいになるほど食べたのですか……？"],
+    },
+  },
+  ramen_count_today: {
+    prompt: ["worry.png", "念のため確認します。そのうちラーメンは何回でしたか？"],
+    reactions: {
+      0: ["thinking.png", "まだ初犯です。審議の余地があります。"],
+      1: ["worry.png", "再犯ですが、まだ情状酌量の余地はあります。"],
+      2: ["worry.png", "体調は大丈夫ですか……？ 少し水も飲んでくださいね。"],
+      3: ["worry.png", "これはもはやラーメン巡礼です。体調は本当に大丈夫ですか……？"],
+    },
+  },
+  achievement: {
+    prompt: ["thinking.png", "次に、今日なしとげたことを教えてください。小さなことでも構いません。"],
+    reactions: {
+      worked: ["thumbup.png", "労働または学習の実績を確認しました。これは強い赦し材料です。"],
+      went_out: ["thumbup.png", "外に出た。それだけで今日はもう一仕事です。"],
+      walked: ["thumbup.png", "歩いた者には、麺へ向かう資格があります。"],
+      housework: ["thumbup.png", "生活を維持した者には、温かい一杯が必要です。"],
+      woke_early: ["thinking.png", "起床という第一の修行を終えていますね。"],
+      kindness: ["thumbup.png", "人にやさしくしたなら、今日はあなたにもやさしくしてよいでしょう。"],
+      oshi: ["thinking.png", "推しを見守る精神的労働を確認しました。"],
+      shorts: ["angry.png", "それは……少し懺悔が必要ですね。"],
+      nothing: ["thinking.png", "これから何かをするための原動力、ということにしましょう。"],
+    },
+  },
+  mood: {
+    prompt: ["thinking.png", "では、今の心の状態を教えてください。"],
+    reactions: {
+      tired: ["worry.png", "疲れているのですね。温かいものが必要かもしれません。"],
+      hungry: ["thumbup.png", "空腹は重要な証言です。これは食事の必要性があります。"],
+      angry: ["worry.png", "むしゃくしゃしているのですね。まずは深呼吸しましょう。"],
+      lonely: ["worry.png", "それなら、せめて温かい丼にそばにいてもらいましょう。"],
+      proud: ["thumbup.png", "達成感がある日のラーメンは、ほぼ祝杯です。"],
+      empty: ["worry.png", "何も考えたくない日もあります。券売機に判断を委ねましょう。"],
+    },
+  },
+  after_plan: {
+    prompt: ["thinking.png", "ラーメンのあと、何をする予定ですか？"],
+    reactions: {
+      work_more: ["thumbup.png", "追加作業の燃料として、ラーメンが申請されています。"],
+      sleep: ["worry.png", "寝るだけなら、本当に食べる必要がありますか……？"],
+      go_home: ["thinking.png", "帰路の一杯。古くからある赦しです。"],
+      meet_people: ["thinking.png", "人と会う前のラーメンは、においも含めて審議します。"],
+      nothing: ["thinking.png", "予定がないなら、ラーメンを予定にできます。"],
+      more_shorts: ["angry.png", "まだ見るのですか……？ それは懺悔が必要です。"],
+    },
+  },
+  reason_not_to_eat: {
+    prompt: ["thinking.png", "ラーメンを食べない理由はありますか？"],
+    reactions: {
+      none: ["thumbup.png", "では、障害はありませんね。"],
+      yes: ["worry.png", "あるのですね……それでも食べたい、と。記録します。"],
+      ignore: ["angry.png", "見ないことにした罪は軽くありません。"],
+    },
+  },
+  ramen_type: {
+    prompt: ["thinking.png", "食べたい系統を選んでください。ここでは全て赦しの対象です。"],
+    reactions: {
+      shoyu: ["thumbup.png", "醤油、王道ですね。よい選択です。"],
+      miso: ["thumbup.png", "味噌は疲労に寄り添います。よい選択です。"],
+      shio: ["thumbup.png", "塩、澄んだ赦しですね。よい選択です。"],
+      tonkotsu: ["thumbup.png", "豚骨、濃厚な赦しを求めていますね。"],
+      iekei: ["thumbup.png", "家系、覚悟のあるよい選択です。"],
+      jiro: ["thumbup.png", "二郎系、強い意志を感じます。よいでしょう。"],
+      tsukemen: ["thumbup.png", "つけ麺、冷静さの残る選択です。"],
+      other: ["thumbup.png", "名付けきれない欲望も、赦しの対象です。"],
+    },
+  },
+  forgiveness_style: {
+    prompt: ["thinking.png", "最後の審議です。どんなふうに赦されたいですか？"],
+    reactions: {
+      praise: ["thumbup.png", "あなたの今日を肯定する方向で審議します。"],
+      spoil: ["thinking.png", "今日は甘やかされたい日なのですね。よいでしょう。"],
+      strict: ["angry.png", "厳しくてもいい、と言いましたね？"],
+      push: ["thumbup.png", "迷いを断ち切る赦しを希望ですね。"],
+      oracle: ["thinking.png", "麺の啓示を求める者として記録します。"],
+    },
+  },
+};
+
+const diagnosisForm = $("#diagnosis-form");
+if (diagnosisForm) {
+  const allSteps = $$(".question-step", diagnosisForm);
+  const answers = {};
+  let visibleSteps = allSteps.filter((step) => !step.hasAttribute("data-conditional"));
   let currentStep = 0;
-  const showStep = (step) => {
-    const current = form.querySelector(".wizard-step.is-active");
-    const next = form.querySelector(`.wizard-step[data-step="${step}"]`);
-    if (!next || current === next) return;
-    current?.classList.add("is-leaving");
-    setTimeout(() => {
-      $$(".wizard-step", form).forEach((item) => {
-        item.classList.remove("is-active", "is-leaving");
+  let hasAnsweredCurrentStep = false;
+  let advanceTimer = null;
+  let isReacting = false;
+  const sisterImage = $("#sister-image");
+  const sisterMessage = $("#sister-message");
+  const sisterPanel = $(".sister-panel", diagnosisForm);
+  const previousButton = $("#previous-question");
+  const autoAdvanceNote = $("#auto-advance-note");
+  const progressBar = $("#progress-bar");
+
+  function setSister(image, message, animate = false) {
+    sisterImage.src = `${sisterImage.dataset.imageBase}${image}`;
+    sisterImage.alt = message;
+    sisterMessage.textContent = message;
+    if (animate) {
+      sisterPanel.classList.remove("is-reacting");
+      void sisterPanel.offsetWidth;
+      sisterPanel.classList.add("is-reacting");
+    }
+  }
+
+  function toggleRamenCountQuestion(meals) {
+    const conditional = allSteps.find((step) => step.dataset.question === "ramen_count_today");
+    const include = Number(meals) >= 3;
+    visibleSteps = allSteps.filter((step) => step !== conditional || include);
+    conditional.disabled = !include;
+    if (!include) {
+      delete answers.ramen_count_today;
+      $$('input[name="ramen_count_today"]', conditional).forEach((input) => {
+        input.checked = false;
       });
-      next.classList.add("is-active");
-      currentStep = step;
-      progress.style.width = `${Math.max(0, step - 1) / 3 * 100}%`;
-      next.querySelector("input")?.focus({ preventScroll: true });
-    }, 280);
-  };
+    }
+  }
 
-  $$(".wizard-next", form).forEach((button) => {
-    button.addEventListener("click", () => showStep(Number(button.dataset.nextStep)));
-  });
+  function showQuestion(stepIndex, preserveIntro = false) {
+    currentStep = Math.max(0, Math.min(stepIndex, visibleSteps.length - 1));
+    allSteps.forEach((step) => step.classList.remove("is-active"));
+    const step = visibleSteps[currentStep];
+    step.classList.add("is-active");
+    const questionName = step.dataset.question;
+    const selectedValue = answers[questionName];
+    hasAnsweredCurrentStep = selectedValue !== undefined;
+    if (!preserveIntro) setSister(...QUESTION_MESSAGES[questionName].prompt);
+    previousButton.disabled = currentStep === 0;
+    const isLast = currentStep === visibleSteps.length - 1;
+    autoAdvanceNote.textContent = isLast
+      ? "回答後、自動で審議を始めます"
+      : "回答を選ぶと自動で次へ進みます";
+    progressBar.style.width = `${((currentStep + 1) / visibleSteps.length) * 100}%`;
+    step.querySelector(`input[value="${CSS.escape(String(selectedValue ?? ""))}"]`)?.focus({ preventScroll: true });
+  }
 
-  const activityNext = $("#activity-next", form);
-  const activityInputs = $$('input[name="walked"], input[name="worked"]', form);
-  const updateActivityNext = () => {
-    const selected = activityInputs.some((input) => input.checked);
-    $("span", activityNext).textContent = selected ? "この内容で次へ" : "どっちもしてない";
-  };
-  activityInputs.forEach((input) => input.addEventListener("change", updateActivityNext));
-  updateActivityNext();
+  function showSisterReaction(questionName, selectedValue) {
+    const reaction = QUESTION_MESSAGES[questionName].reactions[selectedValue];
+    if (reaction) setSister(...reaction, true);
+  }
 
-  $$("[data-auto-next]", form).forEach((input) => {
-    input.addEventListener("change", () => {
-      setTimeout(() => showStep(Number(input.dataset.autoNext)), 360);
-    });
-  });
-
-  $$("[data-submit-answer]", form).forEach((input) => {
-    input.addEventListener("change", () => {
-      progress.style.width = "100%";
-      setTimeout(() => {
+  function selectAnswer(questionName, selectedValue) {
+    if (isReacting) return;
+    answers[questionName] = selectedValue;
+    if (questionName === "meals") toggleRamenCountQuestion(selectedValue);
+    hasAnsweredCurrentStep = true;
+    showSisterReaction(questionName, selectedValue);
+    isReacting = true;
+    diagnosisForm.classList.add("is-reacting");
+    previousButton.disabled = true;
+    autoAdvanceNote.textContent = currentStep === visibleSteps.length - 1
+      ? "判決をまとめています…"
+      : "シスターが確認しています…";
+    clearTimeout(advanceTimer);
+    advanceTimer = setTimeout(() => {
+      isReacting = false;
+      diagnosisForm.classList.remove("is-reacting");
+      if (currentStep === visibleSteps.length - 1) {
         updateClock();
-        form.classList.add("is-submitting");
-        setTimeout(() => form.submit(), 900);
-      }, 420);
+        diagnosisForm.requestSubmit();
+      } else {
+        showQuestion(currentStep + 1);
+      }
+    }, 1250);
+  }
+
+  function goToPreviousQuestion() {
+    clearTimeout(advanceTimer);
+    isReacting = false;
+    diagnosisForm.classList.remove("is-reacting");
+    showQuestion(currentStep - 1);
+  }
+
+  allSteps.forEach((step) => {
+    $$("input[type=radio]", step).forEach((input) => {
+      input.addEventListener("click", () => selectAnswer(input.name, input.value));
     });
   });
-
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    if (form.classList.contains("is-submitting")) return;
+  previousButton.addEventListener("click", goToPreviousQuestion);
+  diagnosisForm.addEventListener("submit", (event) => {
+    if (!hasAnsweredCurrentStep) {
+      event.preventDefault();
+      return;
+    }
     updateClock();
-    form.classList.add("is-submitting");
-    setTimeout(() => form.submit(), 850);
+    diagnosisForm.classList.add("is-submitting");
   });
+  showQuestion(0);
 }
 
 function wrapCanvasText(context, text, maxWidth) {
   const lines = [];
-  let line = "";
-  [...text].forEach((character) => {
-    const candidate = line + character;
-    if (line && context.measureText(candidate).width > maxWidth) {
-      lines.push(line);
-      line = character;
-    } else {
-      line = candidate;
+  text.split("\n").forEach((paragraph) => {
+    if (!paragraph) {
+      lines.push("");
+      return;
     }
+    let line = "";
+    [...paragraph].forEach((character) => {
+      const candidate = line + character;
+      if (line && context.measureText(candidate).width > maxWidth) {
+        lines.push(line);
+        line = character;
+      } else {
+        line = candidate;
+      }
+    });
+    if (line) lines.push(line);
   });
-  if (line) lines.push(line);
   return lines;
-}
-
-function drawWrappedText(context, text, x, y, maxWidth, lineHeight) {
-  const lines = wrapCanvasText(context, text, maxWidth);
-  lines.forEach((line, index) => context.fillText(line, x, y + index * lineHeight));
-  return y + lines.length * lineHeight;
 }
 
 async function createCertificateImage() {
@@ -141,189 +286,143 @@ async function createCertificateImage() {
   canvas.width = 1200;
   canvas.height = 1200;
   const context = canvas.getContext("2d");
-  const reasons = $$(".reason-list p", certificate).map((item) => item.textContent.trim());
+  const resultType = certificate.dataset.resultType;
+  const isSleep = resultType === "sleep";
+  const isBanzai = resultType === "banzai";
+  const image = new Image();
+  image.src = certificate.dataset.downloadImage;
+  try { await image.decode(); } catch (_) {
+    await new Promise((resolve, reject) => {
+      image.onload = resolve;
+      image.onerror = reject;
+    });
+  }
+
+  if (isSleep || isBanzai) {
+    context.fillStyle = "#110b15";
+    context.fillRect(0, 0, 1200, 1200);
+    context.strokeStyle = isBanzai ? "#c99a46" : "#a94855";
+    context.lineWidth = 6;
+    context.strokeRect(35, 35, 1130, 1130);
+    context.drawImage(image, 330, 120, 540, 540);
+    context.fillStyle = isBanzai ? "#e8b84e" : "#e06672";
+    context.textAlign = "center";
+    context.font = `900 ${isBanzai ? 88 : 112}px "Yu Mincho", serif`;
+    context.fillText(isBanzai ? "ラーメンばんざい！" : "今日は寝ろ", 600, 790);
+    drawCanvasSeal(
+      context,
+      960,
+      610,
+      isBanzai ? "麺愛" : "睡眠",
+      isBanzai ? "永遠" : "直行",
+      isBanzai ? "#c99a46" : "#a94855",
+    );
+    context.fillStyle = "#c4b8c7";
+    context.font = '600 24px "Yu Gothic", sans-serif';
+    context.fillText("ラーメン免罪符　#ラーメン免罪符", 600, 1090);
+    return new Promise((resolve, reject) => {
+      canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("PNG生成に失敗しました")), "image/png");
+    });
+  }
+
+  const title = $("h1", certificate).textContent.trim();
   const verdict = $(".verdict-label", certificate).textContent.trim();
-  const judgment = $(".judgment-title", certificate).textContent.trim();
-  const ramen = $$(".signature b", certificate)[0].textContent.trim();
-  const conclusion = $(".conclusion", certificate).textContent.trim();
-  const advice = $(".conditions p", certificate).textContent.trim();
+  const text = $(".result-text", certificate).textContent.trim();
+  const aruaruElement = $(".ramen-aruaru", certificate);
+  const aruaruLabel = $("span", aruaruElement).textContent.trim();
+  const aruaruBody = aruaruElement.textContent.replace(aruaruLabel, "").trim();
+  const ramen = $$(".result-meta b", certificate)[0].textContent.trim();
+  const issuedAt = $$(".result-meta b", certificate)[1].textContent.trim();
 
   context.fillStyle = "#f7f0df";
   context.fillRect(0, 0, 1200, 1200);
-  context.strokeStyle = "#311654";
+  context.strokeStyle = "#4a2459";
   context.lineWidth = 5;
   context.strokeRect(30, 30, 1140, 1140);
   context.lineWidth = 1;
   context.strokeRect(48, 48, 1104, 1104);
-
   context.textAlign = "center";
   context.fillStyle = "#9f273a";
   context.font = '700 24px "Yu Gothic", sans-serif';
-  context.fillText(verdict, 600, 105);
+  context.fillText(verdict, 600, 90);
   context.fillStyle = "#311654";
-  context.font = '700 72px "Yu Mincho", serif';
-  context.fillText("ラーメン免罪符", 600, 190);
-  context.fillStyle = "#9f273a";
-  context.font = '700 38px "Yu Mincho", serif';
-  context.fillText(`— ${judgment} —`, 600, 255);
+  context.font = '700 64px "Yu Mincho", serif';
+  context.fillText(title, 600, 165);
+  context.drawImage(image, 420, 175, 360, 360);
 
   context.textAlign = "left";
   context.fillStyle = "#20152c";
-  context.font = '700 28px "Yu Mincho", serif';
-  context.fillText("以下の情状を認定する。", 105, 330);
-  context.fillStyle = "#542287";
-  context.font = '700 34px "Yu Mincho", serif';
-  context.fillText(ramen, 105, 380);
-
-  let y = 445;
-  reasons.forEach((reason, index) => {
-    context.fillStyle = "#311654";
-    context.beginPath();
-    context.arc(125, y - 8, 21, 0, Math.PI * 2);
-    context.fill();
-    context.fillStyle = "#e8b84e";
-    context.textAlign = "center";
-    context.font = '700 18px "Yu Gothic", sans-serif';
-    context.fillText(String(index + 1), 125, y - 1);
-    context.textAlign = "left";
-    context.fillStyle = "#20152c";
-    context.font = '500 23px "Yu Gothic", sans-serif';
-    y = drawWrappedText(context, reason, 165, y, 750, 35) + 24;
+  context.font = '600 25px "Yu Mincho", serif';
+  const lines = wrapCanvasText(context, text, 980);
+  let y = 560;
+  lines.forEach((line) => {
+    if (line === "ラーメン。") {
+      context.fillStyle = "#311654";
+      context.font = '700 37px "Yu Mincho", serif';
+      context.fillText(line, 110, y + 8);
+      context.font = '600 25px "Yu Mincho", serif';
+      context.fillStyle = "#20152c";
+      y += 52;
+    } else {
+      context.fillText(line, 110, y);
+      y += line ? 39 : 18;
+    }
   });
 
-  const conclusionY = Math.max(y + 10, 770);
+  const boxY = Math.max(y + 18, 825);
   context.fillStyle = "#311654";
-  context.fillRect(90, conclusionY, 820, 92);
+  context.fillRect(75, boxY, 1050, 112);
   context.fillStyle = "#ffffff";
-  context.textAlign = "center";
-  context.font = '700 30px "Yu Mincho", serif';
-  context.fillText(conclusion, 500, conclusionY + 57);
-
-  context.textAlign = "left";
-  context.fillStyle = "#9f273a";
-  context.font = '700 17px "Yu Gothic", sans-serif';
-  context.fillText("付帯条件", 105, conclusionY + 145);
-  context.fillStyle = "#20152c";
-  context.font = '600 20px "Yu Gothic", sans-serif';
-  drawWrappedText(context, advice, 105, conclusionY + 182, 760, 31);
-
-  const image = $(".judge img", certificate);
-  try {
-    await image.decode();
-  } catch (_) {
-    // The image may already be decoded.
-  }
-  const imageSize = 315;
-  context.drawImage(image, 830, 650, imageSize, imageSize);
-
-  context.strokeStyle = "#9f273a";
-  context.lineWidth = 7;
-  context.beginPath();
-  context.arc(1000, 1015, 76, 0, Math.PI * 2);
-  context.stroke();
-  context.textAlign = "center";
-  context.fillStyle = "#9f273a";
-  context.font = '700 25px "Yu Mincho", serif';
-  context.fillText("麺 欲", 1000, 1005);
-  context.fillText("赦 免", 1000, 1042);
-
-  context.fillStyle = "#756c7c";
-  context.font = '500 16px "Yu Gothic", sans-serif';
-  context.fillText("ラーメン免罪符　#ラーメン免罪符", 600, 1130);
+  context.font = '700 22px "Yu Gothic", sans-serif';
+  wrapCanvasText(context, `${aruaruLabel}：${aruaruBody}`, 950).slice(0, 2).forEach((line, index) => {
+    context.fillText(line, 120, boxY + 45 + index * 32);
+  });
+  context.fillStyle = "#665b68";
+  context.font = '600 19px "Yu Gothic", sans-serif';
+  context.fillText(`発行対象：${ramen}`, 90, 1065);
+  context.fillText(`発行日時：${issuedAt}`, 90, 1103);
+  drawCanvasSeal(context, 1000, 150, "麺欲", "赦免");
+  context.textAlign = "right";
+  context.fillText("#ラーメン免罪符", 1110, 1130);
 
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("PNG生成に失敗しました")), "image/png");
   });
 }
 
-const shareCertificate = $("#share-certificate");
-if (shareCertificate) {
-  const shareButtonLabel = $("#share-button-label");
-  const shareGuide = $("#share-guide");
-  const supportsNativeFileShare =
-    Boolean(navigator.share && navigator.canShare) &&
-    navigator.canShare({
-      files: [new File(["test"], "test.png", { type: "image/png" })],
-    });
-  const supportsImageClipboard = Boolean(window.ClipboardItem && navigator.clipboard?.write);
+function drawCanvasSeal(context, x, y, top, bottom, color = "#a94855") {
+  context.save();
+  context.strokeStyle = color;
+  context.fillStyle = color;
+  context.lineWidth = 6;
+  context.strokeRect(x - 72, y - 72, 144, 144);
+  context.lineWidth = 2;
+  context.strokeRect(x - 62, y - 62, 124, 124);
+  context.textAlign = "center";
+  context.font = '700 27px "Yu Mincho", serif';
+  context.fillText(top, x, y - 8);
+  context.fillText(bottom, x, y + 30);
+  context.restore();
+}
 
-  if (supportsNativeFileShare) {
-    shareButtonLabel.textContent = "画像つきで共有する";
-    shareGuide.textContent = "タップ後、共有先の一覧から「X」を選んでください。画像も一緒に渡されます。";
-  } else if (supportsImageClipboard) {
-    shareButtonLabel.textContent = "画像をコピーしてXを開く";
-    shareGuide.textContent = "Xが開いたらCtrl+V（Macは⌘V）で画像を貼り付けます";
-  } else {
-    shareButtonLabel.textContent = "画像を保存してXを開く";
-    shareGuide.textContent = "保存されたPNGを、開いたXの投稿画面で画像追加してください。";
-  }
-
-  shareCertificate.addEventListener("click", async () => {
+const downloadCertificate = $("#download-certificate");
+if (downloadCertificate) {
+  downloadCertificate.addEventListener("click", async () => {
     const status = $("#share-status");
-    const originalText = shareButtonLabel.textContent;
-    shareCertificate.disabled = true;
-    shareButtonLabel.textContent = "免罪符画像を生成中…";
-    status.textContent = "";
+    downloadCertificate.disabled = true;
+    status.textContent = "免罪符画像を生成しています…";
     try {
-      const blobPromise = createCertificateImage();
-      let clipboardPromise = null;
-      let xWindow = null;
-
-      if (!supportsNativeFileShare && supportsImageClipboard) {
-        clipboardPromise = navigator.clipboard.write([
-          new ClipboardItem({ "image/png": blobPromise }),
-        ]);
-        xWindow = window.open(shareCertificate.dataset.shareUrl, "_blank");
-      }
-
-      const blob = await blobPromise;
-      const file = new File([blob], shareCertificate.dataset.filename, { type: "image/png" });
-      const shareData = {
-        files: [file],
-        title: "ラーメン免罪符",
-        text: "本日のラーメン欲は赦されました。 #ラーメン免罪符",
-      };
-      if (supportsNativeFileShare && navigator.canShare(shareData)) {
-        await navigator.share(shareData);
-        status.textContent = "免罪符画像を共有しました。";
-      } else if (clipboardPromise) {
-        try {
-          await clipboardPromise;
-          status.textContent = "画像をコピーしました。Xの投稿欄で Ctrl+V（Macは⌘V）を押してください。";
-          if (!xWindow) window.open(shareCertificate.dataset.shareUrl, "_blank", "noopener");
-        } catch (_) {
-          if (xWindow) xWindow.close();
-          throw new Error("clipboard-failed");
-        }
-      } else {
-        const download = document.createElement("a");
-        download.href = URL.createObjectURL(blob);
-        download.download = shareCertificate.dataset.filename;
-        download.click();
-        setTimeout(() => URL.revokeObjectURL(download.href), 1000);
-        window.open(shareCertificate.dataset.shareUrl, "_blank", "noopener");
-        status.textContent = "PNGを保存しました。Xの投稿画面へ画像を添付してください。";
-      }
-    } catch (error) {
-      if (error.name !== "AbortError" && error.message === "clipboard-failed") {
-        try {
-          const blob = await createCertificateImage();
-          const download = document.createElement("a");
-          download.href = URL.createObjectURL(blob);
-          download.download = shareCertificate.dataset.filename;
-          download.click();
-          setTimeout(() => URL.revokeObjectURL(download.href), 1000);
-          window.open(shareCertificate.dataset.shareUrl, "_blank", "noopener");
-          status.textContent = "画像コピーが許可されなかったため、PNGを保存しました。";
-        } catch (_) {
-          status.textContent = "画像を生成できませんでした。もう一度お試しください。";
-        }
-      } else if (error.name !== "AbortError") {
-        status.textContent = "画像を生成できませんでした。もう一度お試しください。";
-      }
+      const blob = await createCertificateImage();
+      const download = document.createElement("a");
+      download.href = URL.createObjectURL(blob);
+      download.download = downloadCertificate.dataset.filename;
+      download.click();
+      setTimeout(() => URL.revokeObjectURL(download.href), 1000);
+      status.textContent = "免罪符画像をダウンロードしました。";
+    } catch (_) {
+      status.textContent = "免罪符画像を生成できませんでした。";
     } finally {
-      shareCertificate.disabled = false;
-      shareButtonLabel.textContent = originalText;
+      downloadCertificate.disabled = false;
     }
   });
 }
@@ -332,12 +431,8 @@ if (matchMedia("(pointer: fine)").matches && !matchMedia("(prefers-reduced-motio
   $$(".magnetic").forEach((button) => {
     button.addEventListener("mousemove", (event) => {
       const box = button.getBoundingClientRect();
-      const x = (event.clientX - box.left - box.width / 2) * 0.09;
-      const y = (event.clientY - box.top - box.height / 2) * 0.12;
-      button.style.transform = `translate(${x}px, ${y}px)`;
+      button.style.transform = `translate(${(event.clientX - box.left - box.width / 2) * 0.09}px, ${(event.clientY - box.top - box.height / 2) * 0.12}px)`;
     });
-    button.addEventListener("mouseleave", () => {
-      button.style.transform = "";
-    });
+    button.addEventListener("mouseleave", () => { button.style.transform = ""; });
   });
 }

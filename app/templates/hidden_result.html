@@ -1,14 +1,31 @@
 {% extends "base.html" %}
-{% block title %}今日は寝ろ | ラーメン免罪符{% endblock %}
+{% block title %}ラーメンばんざい！ | ラーメン免罪符{% endblock %}
 {% block content %}
-<section class="sleep-result">
-  <p class="sleep-kicker">SECRET JUDGMENT</p>
-  <img src="{{ url_for('static', path='images/prayer.png') }}" alt="静かに祈るシスター">
-  <div class="sleep-verdict">
-    <small>本日の特別判決</small>
-    <h1>今日は寝ろ</h1>
-    <p>ラーメン欲については、明日の昼へ移送する。</p>
+<section class="result-page banzai">
+  <article
+    class="banzai-result certificate-enter"
+    id="certificate"
+    data-result-type="banzai"
+    data-download-image="{{ url_for('static', path='images/banzai.png') }}"
+  >
+    <img src="{{ url_for('static', path='images/banzai.png') }}" alt="万歳するシスター">
+    <h1>ラーメンばんざい！</h1>
+    <div class="result-seal banzai-seal">麺愛<br>永遠</div>
+  </article>
+
+  <div class="share-tools reveal">
+    <button class="button download-button" id="download-certificate" type="button" data-filename="ramen-banzai.png">
+      診断結果を画像で保存
+    </button>
+    <a class="button x-button" href="{{ share_url }}" target="_blank" rel="noopener">
+      診断結果をツイート
+    </a>
+    <p class="share-status" id="share-status" aria-live="polite"></p>
   </div>
-  <a class="button retry-button" href="/">懺悔室へ戻る</a>
+
+  <div class="result-actions reveal">
+    <a class="button retry-button" href="/">懺悔室へ戻る</a>
+  </div>
+  <p class="result-total">これまでに <b>{{ total }}</b> 回、ラーメン欲が審議されました。</p>
 </section>
 {% endblock %}

@@ -19,7 +19,9 @@
       <span>ラーメン免罪符</span>
     </a>
     <nav aria-label="メインナビゲーション">
+      {% if show_stats %}
       <a href="/stats" data-stats-link>統計</a>
+      {% endif %}
       <a href="/about">このアプリについて</a>
     </nav>
   </header>
