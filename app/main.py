@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from datetime import date, datetime
 
 from fastapi import FastAPI, Form, Query, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -79,6 +79,9 @@ async def result(
         },
     )
 
+@app.get("/result")
+async def result_get_redirect():
+    return RedirectResponse(url="/", status_code=303)
 
 @app.get("/about", response_class=HTMLResponse)
 async def about(request: Request):
