@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}免罪審議 | ラーメン免罪符{% endblock %}
+{% block content %}
+<section class="wizard-page">
+  <form class="wizard-form" action="/result" method="post" id="diagnosis-form">
+    <input type="hidden" name="current_hour" id="current-hour" value="12">
+    <input type="hidden" name="current_month" id="current-month" value="1">
+    <input type="hidden" name="current_day" id="current-day" value="1">
+
+    <div class="wizard-progress" aria-hidden="true">
+      <span id="progress-bar"></span>
+    </div>
+
+    <section class="wizard-step wizard-intro is-active" data-step="0">
+      <p class="wizard-kicker">RAMEN CONFESSION</p>
+      <img src="{{ url_for('static', path='images/thinking.png') }}" alt="懺悔を待つシスター">
+      <p class="question-count">質問は、全3問です。</p>
+      <button class="pixel-button wizard-next" type="button" data-next-step="1">懺悔をはじめる <b>→</b></button>
+    </section>
+
+    <fieldset class="wizard-step" data-step="1">
+      <legend><span>QUESTION 1 / 3</span>今日は何食、食べましたか？</legend>
+      <div class="wizard-choices meal-choices">
+        {% for value in range(6) %}
+        <label>
+          <input type="radio" name="meals" value="{{ value }}" data-auto-next="2">
+          <span>{{ value }}食{% if value == 5 %}以上{% endif %}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </fieldset>
+
+    <fieldset class="wizard-step" data-step="2">
+      <legend><span>QUESTION 2 / 3</span>今日、成し遂げたことは？</legend>
+      <div class="wizard-choices activity-choices">
+        <label>
+          <input type="checkbox" name="walked" value="true">
+          <span><b>8000歩以上歩いた</b></span>
+        </label>
+        <label>
+          <input type="checkbox" name="worked" value="true">
+          <span><b>仕事・学習・作業をした</b></span>
+        </label>
+      </div>
+      <button class="pixel-button wizard-next" id="activity-next" type="button" data-next-step="3">
+        <span>どっちもしてない</span> <b>→</b>
+      </button>
+    </fieldset>
+
+    <fieldset class="wizard-step" data-step="3">
+      <legend><span>QUESTION 3 / 3</span>どの一杯を望みますか？</legend>
+      <div class="wizard-choices ramen-choices">
+        {% for ramen in ramen_types %}
+        <label>
+          <input type="radio" name="ramen_type" value="{{ ramen }}" data-submit-answer>
+          <span>{{ ramen }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </fieldset>
+
+    <div class="issuing-overlay" aria-hidden="true">
+      <img src="{{ url_for('static', path='images/idea.png') }}" alt="">
+      <b>審議中...</b>
+      <span></span>
+    </div>
+  </form>
+</section>
+{% endblock %}

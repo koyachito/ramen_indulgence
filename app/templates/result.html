@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ result.title }} | ラーメン免罪符{% endblock %}
+{% block content %}
+<section class="result-page {{ result.tone }}">
+  <div class="result-heading reveal">
+    <p class="eyebrow">FINAL JUDGMENT / 最終判決</p>
+    <p class="case-number">RAMEN ABSOLUTION COURT</p>
+  </div>
+  <article class="certificate certificate-enter" id="certificate">
+    <div class="certificate-rule"></div>
+    <p class="verdict-label">{{ result.verdict }}</p>
+    <h1>ラーメン免罪符</h1>
+    <div class="certificate-main">
+      <div>
+        <p class="judgment-title">{{ result.title }}</p>
+        <p class="permission-lead">以下の情状を認定し、あなたの<br><b>{{ ramen_type }}ラーメン一杯</b>を許可します。</p>
+        <ol class="reason-list">
+          {% for reason in result.reasons %}
+          <li style="--delay: {{ loop.index0 * 1100 }}ms"><span>{{ loop.index }}</span><p>{{ reason }}</p></li>
+          {% endfor %}
+        </ol>
+        <p class="conclusion" style="--conclusion-delay: {{ result.reasons|length * 1100 + 800 }}ms">{{ result.conclusion }}</p>
+        <div
+          class="conditions"
+          style="--conditions-delay: {{ result.reasons|length * 1100 + 1900 }}ms"
+        ><span>付帯条件</span><p>{{ result.advice }}</p></div>
+      </div>
+      <div class="judge">
+        <img src="{{ url_for('static', path='images/' + result.image) }}" alt="ラーメンを食べるシスター">
+        <div class="seal">麺<br>許<br>可</div>
+      </div>
+    </div>
+    <div class="signature">
+      <span>発行対象</span><b>{{ ramen_type }}ラーメン 一杯</b>
+      <span>有効期限</span><b>本日中</b>
+    </div>
+  </article>
+  <div class="result-actions reveal delay-2">
+    <div class="result-action-row">
+      <div class="share-action">
+        <button
+          class="button x-button magnetic"
+          id="share-certificate"
+          type="button"
+          data-share-url="{{ share_url }}"
+          data-filename="ramen-menzaifu.png"
+        >
+          <span class="share-icon" aria-hidden="true">↗</span>
+          <span id="share-button-label">免罪符画像を共有</span>
+        </button>
+        <p class="share-guide" id="share-guide">端末に合った共有方法を確認しています…</p>
+      </div>
+      <a class="button map-button magnetic" href="{{ maps_url }}" target="_blank" rel="noopener">
+        <span class="map-icon" aria-hidden="true">⌖</span>
+        <span><small>Google Mapsで</small>近くの{{ ramen_type }}ラーメンを探す</span>
+      </a>
+    </div>
+    <a class="button retry-button magnetic" href="/diagnosis"><span>↻</span> もう一度審議する</a>
+  </div>
+  <p class="share-status" id="share-status" aria-live="polite"></p>
+  <p class="disclaimer">この免罪符はジョークです。医学・栄養学上の判断ではありません。</p>
+</section>
+{% endblock %}
