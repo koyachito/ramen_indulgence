@@ -4,6 +4,8 @@ from contextlib import closing
 from datetime import datetime
 from pathlib import Path
 
+from .models import DiagnosisInput, DiagnosisResult
+
 DEFAULT_DB = Path(__file__).resolve().parent.parent / "data" / "ramen.db"
 
 TIME_BUCKETS = {
@@ -31,78 +33,113 @@ def db_path() -> Path:
     return Path(os.getenv("RAMEN_DB_PATH", DEFAULT_DB))
 
 
+def database_url() -> str | None:
+    value = os.getenv("DATABASE_URL")
+    if value and value.startswith(("postgresql://", "postgres://")):
+        return value
+    return None
+
+
+def _connect():
+    url = database_url()
+    if url:
+        import psycopg
+
+        return psycopg.connect(url)
+    return sqlite3.connect(db_path())
+
+
+def _placeholder() -> str:
+    return "%s" if database_url() else "?"
+
+
 def init_db() -> None:
-    path = db_path()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with closing(sqlite3.connect(path)) as conn:
+    if not database_url():
+        path = db_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+    id_column = (
+        "INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY"
+        if database_url()
+        else "INTEGER PRIMARY KEY AUTOINCREMENT"
+    )
+    with closing(_connect()) as conn:
         conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS diagnosis_counts (
-                result_type TEXT PRIMARY KEY,
-                count INTEGER NOT NULL DEFAULT 0
-            )
-            """
-        )
-        conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS ramen_counts (
-                ramen_type TEXT PRIMARY KEY,
-                count INTEGER NOT NULL DEFAULT 0
-            )
-            """
-        )
-        conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS ramen_time_counts (
+            f"""
+            CREATE TABLE IF NOT EXISTS diagnosis_logs (
+                id {id_column},
+                created_at TEXT NOT NULL,
+                current_hour INTEGER NOT NULL,
                 time_bucket TEXT NOT NULL,
                 ramen_type TEXT NOT NULL,
-                count INTEGER NOT NULL DEFAULT 0,
-                PRIMARY KEY (time_bucket, ramen_type)
+                meals INTEGER NOT NULL,
+                ramen_count_today INTEGER NOT NULL,
+                achievement TEXT NOT NULL,
+                mood TEXT NOT NULL,
+                reason_not_to_eat TEXT NOT NULL,
+                forgiveness_style TEXT NOT NULL,
+                after_plan TEXT NOT NULL,
+                merit_score INTEGER NOT NULL,
+                danger_score INTEGER NOT NULL,
+                confession_score INTEGER NOT NULL,
+                oni_flag INTEGER NOT NULL,
+                result_type TEXT NOT NULL
+            )
+            """
+        )
+        conn.execute(
+            f"""
+            CREATE TABLE IF NOT EXISTS standalone_judgments (
+                id {id_column},
+                created_at TEXT NOT NULL,
+                result_type TEXT NOT NULL
             )
             """
         )
         conn.commit()
 
 
-def record_result(result_type: str, ramen_type: str, current_hour: int) -> None:
-    with closing(sqlite3.connect(db_path())) as conn:
+def record_result(data: DiagnosisInput, result: DiagnosisResult) -> None:
+    scores = result.scores
+    placeholders = ", ".join([_placeholder()] * 16)
+    with closing(_connect()) as conn:
         conn.execute(
-            """
-            INSERT INTO diagnosis_counts (result_type, count)
-            VALUES (?, 1)
-            ON CONFLICT(result_type) DO UPDATE SET count = count + 1
+            f"""
+            INSERT INTO diagnosis_logs (
+                created_at, current_hour, time_bucket, ramen_type, meals,
+                ramen_count_today, achievement, mood, reason_not_to_eat,
+                forgiveness_style, after_plan, merit_score, danger_score,
+                confession_score, oni_flag, result_type
+            )
+            VALUES ({placeholders})
             """,
-            (result_type,),
-        )
-        conn.execute(
-            """
-            INSERT INTO ramen_counts (ramen_type, count)
-            VALUES (?, 1)
-            ON CONFLICT(ramen_type) DO UPDATE SET count = count + 1
-            """,
-            (ramen_type,),
-        )
-        conn.execute(
-            """
-            INSERT INTO ramen_time_counts (time_bucket, ramen_type, count)
-            VALUES (?, ?, 1)
-            ON CONFLICT(time_bucket, ramen_type) DO UPDATE SET count = count + 1
-            """,
-            (time_bucket(current_hour), ramen_type),
+            (
+                datetime.now().isoformat(),
+                data.current_hour,
+                time_bucket(data.current_hour),
+                result.ramen_label,
+                data.meals,
+                data.ramen_count_today,
+                data.achievement,
+                data.mood,
+                data.reason_not_to_eat,
+                data.forgiveness_style,
+                data.after_plan,
+                scores.merit_score,
+                scores.danger_score,
+                scores.confession_score,
+                scores.oni_flag,
+                result.result_type,
+            ),
         )
         conn.commit()
 
 
 def record_judgment(result_type: str) -> None:
-    """Record a judgment that has no associated ramen selection."""
-    with closing(sqlite3.connect(db_path())) as conn:
+    placeholder = _placeholder()
+    with closing(_connect()) as conn:
         conn.execute(
-            """
-            INSERT INTO diagnosis_counts (result_type, count)
-            VALUES (?, 1)
-            ON CONFLICT(result_type) DO UPDATE SET count = count + 1
-            """,
-            (result_type,),
+            f"INSERT INTO standalone_judgments (created_at, result_type) VALUES ({placeholder}, {placeholder})",
+            (datetime.now().isoformat(), result_type),
         )
         conn.commit()
 
@@ -110,16 +147,26 @@ def record_judgment(result_type: str) -> None:
 def get_stats(current_hour: int | None = None) -> dict[str, object]:
     hour = datetime.now().hour if current_hour is None else current_hour
     bucket = time_bucket(hour)
-    with closing(sqlite3.connect(db_path())) as conn:
+    with closing(_connect()) as conn:
         result_rows = conn.execute(
-            "SELECT result_type, count FROM diagnosis_counts ORDER BY count DESC"
+            """
+            SELECT result_type, COUNT(*)
+            FROM (
+                SELECT result_type FROM diagnosis_logs
+                UNION ALL
+                SELECT result_type FROM standalone_judgments
+            )
+            GROUP BY result_type
+            ORDER BY COUNT(*) DESC
+            """
         ).fetchall()
         ramen_rows = conn.execute(
-            """
-            SELECT ramen_type, count
-            FROM ramen_time_counts
-            WHERE time_bucket = ?
-            ORDER BY count DESC
+            f"""
+            SELECT ramen_type, COUNT(*)
+            FROM diagnosis_logs
+            WHERE time_bucket = {_placeholder()}
+            GROUP BY ramen_type
+            ORDER BY COUNT(*) DESC
             """,
             (bucket,),
         ).fetchall()

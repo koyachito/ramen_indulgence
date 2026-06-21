@@ -1,12 +1,16 @@
-from datetime import date
+from dataclasses import replace
 
 from app.diagnosis import (
     DATE_REASONS,
+    RAMEN_TYPE_LABELS,
+    _date_context,
+    calculate_scores,
     diagnose,
-    get_date_reason,
-    get_food_reason,
-    get_time_reason,
+    generate_result_text,
+    is_hidden_sleep_result,
     maps_url,
+    select_sister_image,
+    share_text,
     x_share_url,
 )
 from app.models import DiagnosisInput
@@ -15,73 +19,180 @@ from app.models import DiagnosisInput
 def make_input(**overrides):
     values = {
         "current_hour": 20,
+        "current_month": 6,
+        "current_day": 22,
         "meals": 2,
-        "walked": True,
-        "worked": True,
-        "current_date": date(2026, 6, 16),
-        "ramen_type": "味噌",
+        "ramen_count_today": 0,
+        "achievement": "worked",
+        "mood": "tired",
+        "after_plan": "work_more",
+        "reason_not_to_eat": "none",
+        "ramen_type": "miso",
+        "forgiveness_style": "praise",
     }
     values.update(overrides)
     return DiagnosisInput(**values)
 
 
-def test_time_reason_boundaries():
-    assert "一日の始まり" in get_time_reason(7)
-    assert "午後のエネルギー" in get_time_reason(11)
-    assert "おやつ" in get_time_reason(14)
-    assert "一日の疲れ" in get_time_reason(18)
-    assert "もう20時" in get_time_reason(20)
-    assert "もう3時" in get_time_reason(3)
-
-
-def test_food_reason_always_supports_ramen():
-    assert "何も食べてない" in get_food_reason(0)
-    assert "2食しか" in get_food_reason(2)
-    assert "別腹" in get_food_reason(5)
-
-
-def test_special_and_default_date_reasons():
-    assert "細長いもの界の王" in get_date_reason(date(2026, 11, 11))
-    assert "和菓子の日" in get_date_reason(date(2026, 6, 16))
-
-
-def test_date_reason_file_covers_every_day_including_leap_day():
-    assert len(DATE_REASONS) == 366
-    assert "四年に一度" in DATE_REASONS["02-29"]
-    assert "大晦日" in DATE_REASONS["12-31"]
-
-
-def test_full_absolution_contains_all_reasons_and_fixed_conclusion():
+def test_low_risk_input_is_forgiven_and_ends_with_ramen():
     result = diagnose(make_input())
-    assert result.result_type == "full"
-    assert result.title == "完全免罪"
-    assert len(result.reasons) == 5
-    assert result.conclusion == "あなたのラーメン欲は、ここに赦されました。"
-    assert "8000歩以上" in result.full_text
-    assert "仕事・学習" in result.full_text
-
-
-def test_activity_reasons_are_omitted_without_blame():
-    result = diagnose(make_input(walked=False, worked=False))
+    assert result.result_type == "forgiven"
+    assert result.image == "eating.png"
+    assert result.full_text.endswith("ラーメン。")
+    assert "味噌ラーメン一杯を赦します" in result.full_text
+    assert "事情があります" not in result.full_text
+    assert "迷っている時間" not in result.full_text
     assert len(result.reasons) == 3
-    assert "歩いて" not in result.full_text
-    assert "仕事・学習" not in result.full_text
+    assert len(result.full_text.splitlines()) == 5
 
 
-def test_conditional_and_restricted_verdicts_remain_available():
-    conditional = diagnose(make_input(current_hour=20, meals=2, walked=False, worked=True))
-    no_rice = diagnose(make_input(current_hour=20, meals=3, walked=False, worked=False))
-    soup = diagnose(make_input(current_hour=23, meals=4, walked=False, worked=False))
-    assert conditional.result_type == "conditional"
-    assert no_rice.result_type == "no_rice"
-    assert soup.result_type == "soup"
-    assert {conditional.image, no_rice.image, soup.image} == {"eating.png"}
+def test_all_date_reasons_have_consistent_polite_endings():
+    assert len(DATE_REASONS) == 366
+    assert all(reason.endswith(("なのです", "のです")) for reason in DATE_REASONS.values())
+    context = _date_context(make_input())
+    assert "6月22日" in context
+    assert "ボウリングの日" in context
+    assert context.endswith(("なのです", "のです"))
+
+
+def test_scores_follow_oni_conditions():
+    data = make_input(
+        meals=4,
+        ramen_count_today=2,
+        achievement="shorts",
+        after_plan="more_shorts",
+        reason_not_to_eat="ignore",
+        ramen_type="jiro",
+        forgiveness_style="strict",
+    )
+    scores = calculate_scores(data)
+    assert scores.oni_flag == 8
+    assert scores.danger_score == 6
+    assert scores.confession_score == 6
+    assert diagnose(data).result_type == "ogre"
+    assert diagnose(data).image == "ogre.png"
+
+
+def test_angry_mood_does_not_add_oni_flag():
+    calm = calculate_scores(make_input(mood="tired"))
+    angry = calculate_scores(make_input(mood="angry"))
+    assert angry.oni_flag == calm.oni_flag
+    assert angry.confession_score == calm.confession_score + 1
+
+
+def test_strict_three_meals_and_shorts_reaches_ogre():
+    result = diagnose(
+        make_input(
+            meals=3,
+            achievement="shorts",
+            ramen_type="tonkotsu",
+            forgiveness_style="strict",
+        )
+    )
+    assert result.scores.oni_flag >= 4
+    assert result.result_type == "ogre"
+
+
+def test_deep_night_never_directly_forces_sleep():
+    normal = diagnose(make_input(current_hour=23, meals=3, after_plan="sleep"))
+    extreme = diagnose(
+        make_input(
+            current_hour=23,
+            meals=4,
+            ramen_count_today=3,
+            achievement="shorts",
+            after_plan="more_shorts",
+            reason_not_to_eat="ignore",
+            ramen_type="jiro",
+            forgiveness_style="strict",
+        )
+    )
+    assert normal.result_type != "sleep"
+    assert extreme.result_type == "ogre"
+
+
+def test_result_image_priority():
+    base = calculate_scores(make_input())
+    assert select_sister_image(replace(base, merit_score=0), "forgiven") == "eating.png"
+    assert select_sister_image(base, "worry") == "eating.png"
+    assert select_sister_image(base, "angry") == "angry_eating.png"
+    assert select_sister_image(base, "ogre") == "ogre.png"
+    assert select_sister_image(base, "sleep") == "prayer.png"
+
+
+def test_tonkotsu_and_jiro_add_oni_flag():
+    base = calculate_scores(make_input(ramen_type="shoyu"))
+    tonkotsu = calculate_scores(make_input(ramen_type="tonkotsu"))
+    jiro = calculate_scores(make_input(ramen_type="jiro"))
+    assert tonkotsu.oni_flag == base.oni_flag + 1
+    assert jiro.oni_flag == base.oni_flag + 1
+
+
+def test_sleep_result_requires_exact_answer_combination():
+    exact = make_input(
+        meals=4,
+        ramen_count_today=3,
+        achievement="shorts",
+        mood="empty",
+        after_plan="more_shorts",
+        reason_not_to_eat="yes",
+        ramen_type="tonkotsu",
+        forgiveness_style="strict",
+    )
+    assert is_hidden_sleep_result(exact)
+    assert diagnose(exact).result_type == "sleep"
+
+    for field, value in {
+        "meals": 3,
+        "ramen_count_today": 2,
+        "achievement": "worked",
+        "mood": "tired",
+        "after_plan": "sleep",
+        "reason_not_to_eat": "none",
+        "ramen_type": "miso",
+        "forgiveness_style": "praise",
+    }.items():
+        changed = replace(exact, **{field: value})
+        assert not is_hidden_sleep_result(changed)
+        assert diagnose(changed).result_type != "sleep"
+
+
+def test_other_selects_a_concrete_ramen_recommendation():
+    result = diagnose(make_input(ramen_type="other"))
+    assert result.ramen_label in set(RAMEN_TYPE_LABELS.values()) - {"その他"}
+    assert result.ramen_aruaru
 
 
 def test_external_urls_are_encoded():
-    result = diagnose(make_input())
-    share = x_share_url(result, "味噌", "https://example.com")
+    result = diagnose(make_input(achievement="kindness", ramen_type="jiro"))
+    text = share_text(result, "https://ramen-indulgence.onrender.com/")
+    share = x_share_url(text)
     assert "twitter.com/intent/tweet" in share
-    assert "%E8%B5%A6%E3%81%95%E3%82%8C" in share
-    assert len(share) < 500
+    assert "%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3" in share
+    assert "https://ramen-indulgence.onrender.com/" in text
+    assert "理由：今日は人に優しくしたので" in text
+    assert "よって、二郎系一杯が赦されました。" in text
+    assert "ラーメン……。" in text
+    assert "#ラーメン免罪符" in text
     assert "%E5%91%B3%E5%99%8C" in maps_url("味噌")
+
+
+def test_sleep_result_has_dedicated_share_text():
+    data = make_input(
+        current_hour=23,
+        meals=4,
+        ramen_count_today=3,
+        achievement="shorts",
+        after_plan="more_shorts",
+        reason_not_to_eat="ignore",
+        ramen_type="jiro",
+        forgiveness_style="strict",
+    )
+    base = diagnose(data)
+    result = generate_result_text(data, base.scores, "sleep")
+    text = share_text(result, "https://ramen-indulgence.onrender.com/")
+    assert "シスターに止められました" in text
+    assert "診断結果：今日は寝ろ" in text
+    assert "睡眠が赦されました" in text
+    assert "おやすみ……" in text
+    assert "本日の一杯" not in text
