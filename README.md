@@ -82,8 +82,3 @@ docker run --rm -p 8000:8000 -v ramen-data:/app/data ramen-menzaifu
 - `/about` アプリとプライバシー方針
 - `/health` 稼働確認
 
-## 今後の候補
-
-- OGP画像の追加
-- 深夜モード、42Tokyoモード
-- GitHub Actionsによるテスト自動化
