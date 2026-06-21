@@ -64,6 +64,13 @@ pytest
 docker build -t ramen-menzaifu .
 docker run --rm -p 8000:8000 -v ramen-data:/app/data ramen-menzaifu
 ```
+### データ保存について
+
+ローカル環境および `DATABASE_URL` 未設定時は SQLite を使用します。  
+Renderなどのホスティング環境では、再デプロイや再起動によりSQLite上の診断ログが失われる場合があります。
+
+`DATABASE_URL` にPostgreSQLの接続URLを設定した場合は、PostgreSQLへ保存する構成に切り替わります。  
+現在の公開版では、運用コストを抑えるためPostgreSQL常時運用は必須としていません。
 
 ## データベースと結果生成
 
