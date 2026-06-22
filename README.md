@@ -1,5 +1,7 @@
 # ラーメン免罪符
 
+![Tests](https://github.com/koyachito/ramen_indulgence/actions/workflows/test.yml/badge.svg)
+
 「今日ラーメンを食べてもよい理由がほしい」という欲望を、シスターとの事情聴取を通して審議するジョークWebアプリです。
 
 ## Demo
