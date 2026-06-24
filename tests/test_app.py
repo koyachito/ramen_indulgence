@@ -110,6 +110,40 @@ def test_frontend_modules_exist():
         assert Path("app/static/js", module_path).is_file()
 
 
+def test_stamp_assets_are_used_by_result_pages_and_canvas():
+    for asset in ("menyoku.png", "suimin.png", "menai.png"):
+        assert Path("app/static/images", asset).is_file()
+
+    standard = asyncio.run(request("POST", "/result", data=VALID_DATA))
+    sleep = asyncio.run(
+        request(
+            "POST",
+            "/result",
+            data={
+                **VALID_DATA,
+                "meals": "4",
+                "ramen_count_today": "3",
+                "achievement": "shorts",
+                "mood": "empty",
+                "after_plan": "more_shorts",
+                "reason_not_to_eat": "ignore",
+                "ramen_type": "iekei",
+                "forgiveness_style": "strict",
+            },
+        )
+    )
+    banzai = asyncio.run(request("POST", "/hidden-judgment"))
+
+    assert "images/menyoku.png" in standard.text
+    assert "images/suimin.png" in sleep.text
+    assert "images/menai.png" in banzai.text
+
+    canvas = Path("app/static/js/certificate_canvas.js").read_text(encoding="utf-8")
+    assert "certificate.dataset.sealImage" in canvas
+    assert "context.drawImage(sealImage" in canvas
+    assert "drawCanvasSeal" not in canvas
+
+
 def test_clock_uses_japan_time_for_diagnosis_and_stats():
     clock = Path("app/static/js/clock.js").read_text(encoding="utf-8")
 
@@ -159,7 +193,8 @@ def test_posting_diagnosis_returns_new_result_structure():
     assert "他の文言で赦される" in response.text
     assert response.text.index("ラーメン。") < response.text.index("近くのラーメンを探す")
     assert response.text.index("近くのラーメンを探す") < response.text.index("診断結果を画像で保存")
-    assert "麺欲<br>赦免" in response.text
+    assert "images/menyoku.png" in response.text
+    assert 'alt="麺欲赦免"' in response.text
     assert "images/eating.png" in response.text
     assert 'href="/stats"' in response.text
     assert 'class="about-nav-link" href="/about"' in response.text
@@ -253,7 +288,8 @@ def test_exact_hidden_sleep_combination_returns_sleep_from_diagnosis():
     )
     assert response.status_code == 200
     assert "今日は寝ろ" in response.text
-    assert "睡眠<br>直行" in response.text
+    assert "images/suimin.png" in response.text
+    assert 'alt="睡眠直行"' in response.text
 
 
 def test_hidden_command_records_banzai_judgment_with_share_actions():
@@ -266,7 +302,8 @@ def test_hidden_command_records_banzai_judgment_with_share_actions():
     assert "banzai.png" in result.text
     assert "診断結果を画像で保存" in result.text
     assert "診断結果をツイート" in result.text
-    assert "麺愛<br>永遠" in result.text
+    assert "images/menai.png" in result.text
+    assert 'alt="麺愛永遠"' in result.text
     assert "今日も堂々と、ラーメンを愛します" in unquote(result.text)
 
 

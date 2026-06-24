@@ -8,10 +8,15 @@
     id="certificate"
     data-result-type="sleep"
     data-download-image="{{ url_for('static', path='images/prayer.png') }}"
+    data-seal-image="{{ url_for('static', path='images/suimin.png') }}"
   >
     <img src="{{ url_for('static', path='images/' + result.image) }}" alt="">
     <h1>今日は寝ろ</h1>
-    <div class="result-seal sleep-seal">睡眠<br>直行</div>
+    <img
+      class="result-seal sleep-seal"
+      src="{{ url_for('static', path='images/suimin.png') }}"
+      alt="睡眠直行"
+    >
   </article>
   <div class="share-tools reveal">
     <button class="button download-button" id="download-certificate" type="button" data-filename="ramen-menzaifu.png">
@@ -31,6 +36,7 @@
     id="certificate"
     data-result-type="{{ result.result_type }}"
     data-download-image="{{ url_for('static', path='images/' + result.image) }}"
+    data-seal-image="{{ url_for('static', path='images/menyoku.png') }}"
   >
     <p class="verdict-label">{{ result.verdict }}</p>
     <h1 class="{% if result.result_type == 'sleep' %}sleep-title{% endif %}">{{ result.title }}</h1>
@@ -58,7 +64,11 @@
       <span>発行対象</span><b>{{ result.ramen_label }}ラーメン 一杯</b>
       <span>発行日時</span><b id="issued-at">本日</b>
     </div>
-    <div class="result-seal">麺欲<br>赦免</div>
+    <img
+      class="result-seal"
+      src="{{ url_for('static', path='images/menyoku.png') }}"
+      alt="麺欲赦免"
+    >
   </article>
 
   <div class="result-actions reveal">
