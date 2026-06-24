@@ -71,7 +71,7 @@ def test_scores_follow_oni_conditions():
     assert scores.danger_score == 6
     assert scores.confession_score == 6
     assert diagnose(data).result_type == "ogre"
-    assert diagnose(data).image == "ogre.png"
+    assert diagnose(data).image == "ogreleft.png"
 
 
 def test_angry_mood_does_not_add_oni_flag():
@@ -117,7 +117,7 @@ def test_result_image_priority():
     assert select_sister_image(replace(base, merit_score=0), "forgiven") == "eating.png"
     assert select_sister_image(base, "worry") == "eating.png"
     assert select_sister_image(base, "angry") == "angry_eating.png"
-    assert select_sister_image(base, "ogre") == "ogre.png"
+    assert select_sister_image(base, "ogre") == "ogreleft.png"
     assert select_sister_image(base, "sleep") == "prayer.png"
 
 

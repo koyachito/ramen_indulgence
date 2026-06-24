@@ -19,7 +19,7 @@ def select_sister_image(scores: DiagnosisScores, result_type: str) -> str:
     if result_type == "sleep":
         return "prayer.png"
     if result_type == "ogre":
-        return "ogre.png"
+        return "ogreleft.png"
     if result_type == "angry":
         return "angry_eating.png"
     return "eating.png"

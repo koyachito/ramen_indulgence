@@ -113,7 +113,7 @@ def test_frontend_modules_exist():
 
 
 def test_stamp_assets_are_used_by_result_pages_and_canvas():
-    for asset in ("menyoku.png", "suimin.png", "menai.png"):
+    for asset in ("menyoku.png", "suimin.png", "menai.png", "ogreleft.png"):
         assert Path("app/static/images", asset).is_file()
 
     standard = asyncio.run(request("POST", "/result", data=VALID_DATA))
@@ -375,6 +375,10 @@ def test_result_stamp_does_not_overlap_result_heading():
     assert "top: 34px;" in stylesheet
     assert "right: calc(50% - 155px); top: 30px;" in stylesheet
     assert "context.drawImage(sealImage, 730, 75, 180, 180);" in canvas
+    assert "margin: 0 auto 12px;" in stylesheet
+    assert '.result-card[data-result-type="ogre"] .result-sister' in stylesheet
+    assert "transform: translateX(-28px);" in stylesheet
+    assert 'resultType === "ogre" ? 350 : 420' in canvas
     standard_result = template[template.index('{% else %}'):]
     assert standard_result.index('class="result-sister"') < standard_result.index('class="verdict-label"')
     assert standard_result.index('class="verdict-label"') < standard_result.index("<h1")

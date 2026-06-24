@@ -670,9 +670,12 @@ input[type="range"] { width: 100%; accent-color: var(--purple-2); cursor: pointe
 .result-sister {
   width: min(320px, 72vw);
   height: 300px;
-  margin: 0 auto -12px;
+  margin: 0 auto 12px;
   object-fit: contain;
   filter: drop-shadow(0 15px 18px rgba(0,0,0,.45));
+}
+.result-card[data-result-type="ogre"] .result-sister {
+  transform: translateX(-28px);
 }
 .result-copy {
   padding: 30px 35px;
