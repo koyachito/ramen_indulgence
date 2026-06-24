@@ -3,10 +3,12 @@ import sqlite3
 from contextlib import closing
 from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from .models import DiagnosisInput, DiagnosisResult
 
 DEFAULT_DB = Path(__file__).resolve().parent.parent / "data" / "ramen.db"
+JAPAN_TIMEZONE = ZoneInfo("Asia/Tokyo")
 
 TIME_BUCKETS = {
     "morning": "朝（7〜11時）",
@@ -27,6 +29,10 @@ def time_bucket(hour: int) -> str:
     if 18 <= hour < 20:
         return "dinner"
     return "night"
+
+
+def japan_now() -> datetime:
+    return datetime.now(JAPAN_TIMEZONE)
 
 
 def db_path() -> Path:
@@ -113,7 +119,7 @@ def record_result(data: DiagnosisInput, result: DiagnosisResult) -> None:
             VALUES ({placeholders})
             """,
             (
-                datetime.now().isoformat(),
+                japan_now().isoformat(),
                 data.current_hour,
                 time_bucket(data.current_hour),
                 result.ramen_label,
@@ -139,13 +145,13 @@ def record_judgment(result_type: str) -> None:
     with closing(_connect()) as conn:
         conn.execute(
             f"INSERT INTO standalone_judgments (created_at, result_type) VALUES ({placeholder}, {placeholder})",
-            (datetime.now().isoformat(), result_type),
+            (japan_now().isoformat(), result_type),
         )
         conn.commit()
 
 
 def get_stats(current_hour: int | None = None) -> dict[str, object]:
-    hour = datetime.now().hour if current_hour is None else current_hour
+    hour = japan_now().hour if current_hour is None else current_hour
     bucket = time_bucket(hour)
     with closing(_connect()) as conn:
         result_rows = conn.execute(

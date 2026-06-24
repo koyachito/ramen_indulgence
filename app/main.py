@@ -172,7 +172,7 @@ async def stats(request: Request, hour: int | None = Query(None, ge=0, le=23)):
         request=request,
         name="stats.html",
         context={
-            "stats": get_stats(datetime.now().hour if hour is None else hour),
+            "stats": get_stats(hour),
             "labels": labels,
             "ramen_types": RAMEN_TYPES,
             "show_stats": True,
