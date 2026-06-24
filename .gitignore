@@ -6,4 +6,5 @@ venv/
 .env
 data/*.db
 !.gitkeep
+backups/*.db
 gimon.md
