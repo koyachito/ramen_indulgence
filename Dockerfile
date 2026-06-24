@@ -8,6 +8,6 @@ COPY app ./app
 COPY data ./data
 
 ENV PORT=8000
+ENV RAMEN_DB_PATH=/app/data/ramen.db
 EXPOSE 8000
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"]
-
