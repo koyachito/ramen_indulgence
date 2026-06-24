@@ -91,7 +91,7 @@ export async function createCertificateImage() {
   context.lineWidth = 1;
   context.strokeRect(48, 48, 1104, 1104);
   context.textAlign = "center";
-  context.drawImage(image, resultType === "ogre" ? 350 : 420, 70, 360, 360);
+  context.drawImage(image, 420, 70, 360, 360);
   context.drawImage(sealImage, 730, 75, 180, 180);
   context.fillStyle = "#9f273a";
   context.font = '900 34px "Yu Gothic", sans-serif';
@@ -104,7 +104,7 @@ export async function createCertificateImage() {
   context.fillStyle = "#eee8dd";
   context.font = '600 25px "Yu Mincho", serif';
   const lines = wrapCanvasText(context, text, 980);
-  let y = 560;
+  let y = 610;
   lines.forEach((line) => {
     if (line === "ラーメン。") {
       context.fillStyle = "#e8d8ee";

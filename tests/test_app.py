@@ -158,7 +158,7 @@ def test_standard_result_card_uses_dark_background():
     assert "background: transparent !important;" in stylesheet
     assert "box-shadow: none;" in stylesheet
     assert "linear-gradient(145deg, #110b15, #1a0f20 48%, #0c0910) !important;" in stylesheet
-    assert "?v=16-result-copy-position" in base_template
+    assert "?v=16-result-spacing-2" in base_template
     assert 'context.fillStyle = "#110b15";' in canvas
     assert 'context.fillStyle = "#f7f0df";' not in canvas
     assert 'context.strokeStyle = "#a94855";' in canvas
@@ -375,10 +375,13 @@ def test_result_stamp_does_not_overlap_result_heading():
     assert "top: 34px;" in stylesheet
     assert "right: calc(50% - 155px); top: 30px;" in stylesheet
     assert "context.drawImage(sealImage, 730, 75, 180, 180);" in canvas
-    assert "margin: 0 auto 12px;" in stylesheet
-    assert '.result-card[data-result-type="ogre"] .result-sister' in stylesheet
-    assert "transform: translateX(-28px);" in stylesheet
-    assert 'resultType === "ogre" ? 350 : 420' in canvas
+    assert "margin: 0 auto 32px;" in stylesheet
+    assert "margin: 8px 0 46px;" in stylesheet
+    assert "margin-bottom: -10px;" in stylesheet
+    assert '.result-card[data-result-type="ogre"] .result-sister' not in stylesheet
+    assert 'resultType === "ogre" ? 350 : 420' not in canvas
+    assert "context.drawImage(image, 420, 70, 360, 360);" in canvas
+    assert "let y = 610;" in canvas
     standard_result = template[template.index('{% else %}'):]
     assert standard_result.index('class="result-sister"') < standard_result.index('class="verdict-label"')
     assert standard_result.index('class="verdict-label"') < standard_result.index("<h1")
