@@ -88,10 +88,10 @@ def test_top_and_diagnosis_show_about_and_hide_stats_navigation():
     interview_flow = Path("app/static/js/interview_flow.js").read_text(encoding="utf-8")
     question_messages = Path("app/static/js/question_messages.js").read_text(encoding="utf-8")
     assert 'type="module"' in diagnosis.text
-    assert 'from "./js/interview_flow.js?v=16-reaction-2s"' in entrypoint
+    assert 'from "./js/interview_flow.js?v=16-reaction-2300ms"' in entrypoint
     assert 'input.addEventListener("click"' in interview_flow
     assert "JSON.parse(questionConfig.textContent)" in question_messages
-    assert "const SISTER_REACTION_DISPLAY_MS = 2000;" in interview_flow
+    assert "const SISTER_REACTION_DISPLAY_MS = 2300;" in interview_flow
     assert "}, SISTER_REACTION_DISPLAY_MS);" in interview_flow
     assert "}, 1250);" not in interview_flow
     assert "const QUESTION_MESSAGES = {" not in entrypoint
@@ -159,7 +159,7 @@ def test_standard_result_card_uses_dark_background():
     assert "box-shadow: none;" in stylesheet
     assert "linear-gradient(145deg, #110b15, #1a0f20 48%, #0c0910) !important;" in stylesheet
     assert "?v=16-result-spacing-4" in base_template
-    assert "?v=16-reaction-2s" in base_template
+    assert "?v=16-reaction-2300ms" in base_template
     assert 'context.fillStyle = "#110b15";' in canvas
     assert 'context.fillStyle = "#f7f0df";' not in canvas
     assert 'context.strokeStyle = "#a94855";' in canvas

@@ -2,7 +2,7 @@ import { $, $$ } from "./dom.js";
 import { updateClock } from "./clock.js";
 import { loadQuestionMessages } from "./question_messages.js";
 
-const SISTER_REACTION_DISPLAY_MS = 2000;
+const SISTER_REACTION_DISPLAY_MS = 2300;
 
 export function initInterviewFlow() {
   const diagnosisForm = $("#diagnosis-form");
