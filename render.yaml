@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: ramen-indulgence
+    runtime: docker
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: RAMEN_DB_PATH
+        value: /app/data/ramen.db
+    disk:
+      name: ramen-data
+      mountPath: /app/data
+      sizeGB: 1
