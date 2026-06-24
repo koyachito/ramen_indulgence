@@ -22,11 +22,15 @@ GitHub Issue に着手するときは、次の手順を守る。
    - 例: `git switch -c issue-10-mobile-about-link`
 7. Issue の要件を確認し、必要な変更だけを実装する。
 8. Issue の完了条件に対応するテストと動作確認を行う。
-9. 差分を確認し、Issue に関係するファイルだけを commit する。
-10. 作業ブランチを GitHub に push する。
+9. ローカル確認用サーバーを起動し、ユーザーがブラウザで確認できる状態にする。
+   - 原則として `./start.sh` を使用する。
+   - 起動後に `http://127.0.0.1:8000/` へアクセスできることを確認する。
+   - ユーザーへ確認URLを報告する。
+10. 差分を確認し、Issue に関係するファイルだけを commit する。
+11. 作業ブランチを GitHub に push する。
    - 初回: `git push -u origin <ブランチ名>`
    - 以降: `git push`
-11. 実装内容、確認結果、push 先のブランチをユーザーへ報告する。
+12. 実装内容、確認結果、push 先のブランチをユーザーへ報告する。
    - GitHub へ push した場合は、必ず Pull Request 作成用 URL も報告する。
    - URL 形式: `https://github.com/<owner>/<repository>/pull/new/<ブランチ名>`
 
