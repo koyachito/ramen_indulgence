@@ -91,14 +91,14 @@ export async function createCertificateImage() {
   context.lineWidth = 1;
   context.strokeRect(48, 48, 1104, 1104);
   context.textAlign = "center";
-  context.drawImage(image, 420, 70, 360, 360);
-  context.drawImage(sealImage, 730, 75, 180, 180);
+  context.drawImage(image, 435, 55, 330, 330);
+  context.drawImage(sealImage, 900, 70, 180, 180);
   context.fillStyle = "#9f273a";
   context.font = '900 34px "Yu Gothic", sans-serif';
-  context.fillText(verdict, 600, 455);
+  context.fillText(verdict, 600, 435);
   context.fillStyle = "#e8d8ee";
   context.font = '700 64px "Yu Mincho", serif';
-  context.fillText(title, 600, 525);
+  context.fillText(title, 600, 520);
 
   context.textAlign = "left";
   context.fillStyle = "#eee8dd";
