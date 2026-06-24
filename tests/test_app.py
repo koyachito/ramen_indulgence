@@ -68,10 +68,29 @@ def test_top_and_diagnosis_hide_stats_navigation():
         '<script id="diagnosis-question-config" type="application/json">', 1
     )[1].split("</script>", 1)[0]
     assert json.loads(embedded_config) == QUESTION_MESSAGES
-    script = Path("app/static/script.js").read_text(encoding="utf-8")
-    assert 'input.addEventListener("click"' in script
-    assert "JSON.parse(questionConfig.textContent)" in script
-    assert "const QUESTION_MESSAGES = {" not in script
+    entrypoint = Path("app/static/script.js").read_text(encoding="utf-8")
+    interview_flow = Path("app/static/js/interview_flow.js").read_text(encoding="utf-8")
+    question_messages = Path("app/static/js/question_messages.js").read_text(encoding="utf-8")
+    assert 'type="module"' in diagnosis.text
+    assert 'from "./js/interview_flow.js"' in entrypoint
+    assert 'input.addEventListener("click"' in interview_flow
+    assert "JSON.parse(questionConfig.textContent)" in question_messages
+    assert "const QUESTION_MESSAGES = {" not in entrypoint
+
+
+def test_frontend_modules_exist():
+    module_paths = (
+        "clock.js",
+        "reveal.js",
+        "question_messages.js",
+        "interview_flow.js",
+        "certificate_canvas.js",
+        "download_certificate.js",
+        "page_enhancements.js",
+        "dom.js",
+    )
+    for module_path in module_paths:
+        assert Path("app/static/js", module_path).is_file()
 
 
 def test_server_choice_validation_uses_central_definitions():
