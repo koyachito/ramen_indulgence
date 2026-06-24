@@ -98,6 +98,16 @@ def test_frontend_modules_exist():
         assert Path("app/static/js", module_path).is_file()
 
 
+def test_clock_uses_japan_time_for_diagnosis_and_stats():
+    clock = Path("app/static/js/clock.js").read_text(encoding="utf-8")
+
+    assert 'const JAPAN_TIMEZONE = "Asia/Tokyo";' in clock
+    assert "timeZone: JAPAN_TIMEZONE" in clock
+    assert "hour.value = japan.hour" in clock
+    assert 'link.href = "/stats"' in clock
+    assert "new Date().getHours()" not in clock
+
+
 def test_server_choice_validation_uses_central_definitions():
     assert set(QUESTION_MESSAGES) == set(VALID_CHOICE_VALUES)
     for name, messages in QUESTION_MESSAGES.items():

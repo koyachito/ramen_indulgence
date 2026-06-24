@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from app import database
 from app.diagnosis import diagnose
@@ -43,3 +44,10 @@ def test_stats_track_diagnosis_logs(tmp_path: Path):
     assert stats["ramen"]["味噌"] == 2
     assert stats["ramen_total"] == 2
     assert stats["time_bucket"] == "night"
+
+
+def test_japan_now_is_timezone_aware():
+    current = database.japan_now()
+
+    assert current.tzinfo == ZoneInfo("Asia/Tokyo")
+    assert current.utcoffset() is not None
