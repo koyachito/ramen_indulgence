@@ -25,12 +25,12 @@ def select_sister_image(scores: DiagnosisScores, result_type: str) -> str:
     return "eating.png"
 
 
-def _caution_reason(danger_score: int) -> str:
+def _caution_reason(danger_score: int, rng=random) -> str:
     if danger_score >= 4:
-        return random.choice(("通常であれば止めるべき案件です", "かなり厳しい審議となりました"))
+        return rng.choice(("通常であれば止めるべき案件です", "かなり厳しい審議となりました"))
     if danger_score >= 2:
-        return random.choice(("慎重な判断が必要です", "罪の気配がないとは言えません"))
-    return random.choice(("特に大きな問題は見当たりません", "審議は比較的穏やかに進みました"))
+        return rng.choice(("慎重な判断が必要です", "罪の気配がないとは言えません"))
+    return rng.choice(("特に大きな問題は見当たりません", "審議は比較的穏やかに進みました"))
 
 
 def _date_context(data: DiagnosisInput) -> str:
@@ -62,13 +62,13 @@ def _ramen_count_context(data: DiagnosisInput) -> str:
     }[data.ramen_count_today]
 
 
-def _natural_reasons(data: DiagnosisInput, scores: DiagnosisScores) -> tuple[str, ...]:
+def _natural_reasons(data: DiagnosisInput, scores: DiagnosisScores, rng=random) -> tuple[str, ...]:
     personal = [
-        random.choice(ACHIEVEMENT_REASONS[data.achievement]),
-        random.choice(MOOD_REASONS[data.mood]),
+        rng.choice(ACHIEVEMENT_REASONS[data.achievement]),
+        rng.choice(MOOD_REASONS[data.mood]),
     ]
     meal_and_time = [
-        random.choice(MEAL_REASONS[data.meals]),
+        rng.choice(MEAL_REASONS[data.meals]),
         _time_context(data.current_hour),
         _date_context(data),
     ]
@@ -76,30 +76,32 @@ def _natural_reasons(data: DiagnosisInput, scores: DiagnosisScores) -> tuple[str
     if ramen_count:
         meal_and_time.append(ramen_count)
     judgment = [
-        random.choice(PLAN_REASONS[data.after_plan]),
-        random.choice(REASON_NOT_TO_EAT_REASONS[data.reason_not_to_eat]),
-        random.choice(FORGIVENESS_REASONS[data.forgiveness_style]),
-        _caution_reason(scores.danger_score),
+        rng.choice(PLAN_REASONS[data.after_plan]),
+        rng.choice(REASON_NOT_TO_EAT_REASONS[data.reason_not_to_eat]),
+        rng.choice(FORGIVENESS_REASONS[data.forgiveness_style]),
+        _caution_reason(scores.danger_score, rng),
     ]
-    return tuple(f"{random.choice(group).rstrip('。')}。" for group in (personal, meal_and_time, judgment))
+    return tuple(f"{rng.choice(group).rstrip('。')}。" for group in (personal, meal_and_time, judgment))
 
 
-def _ramen_selection(data: DiagnosisInput, scores: DiagnosisScores) -> tuple[str, str]:
+def _ramen_selection(data: DiagnosisInput, scores: DiagnosisScores, rng=random) -> tuple[str, str]:
     selected = data.ramen_type
     if selected == "other":
         candidates = tuple(key for key in RAMEN_TYPE_LABELS if key != "other")
-        selected = scores.ramen_bias if scores.ramen_bias in candidates else random.choice(candidates)
-    return RAMEN_TYPE_LABELS[selected], random.choice(RAMEN_ARUARU[selected])
+        selected = scores.ramen_bias if scores.ramen_bias in candidates else rng.choice(candidates)
+    return RAMEN_TYPE_LABELS[selected], rng.choice(RAMEN_ARUARU[selected])
 
 
 def generate_result_text(
     data: DiagnosisInput,
     scores: DiagnosisScores,
     result_type: str | None = None,
+    rng: random.Random | None = None,
 ) -> DiagnosisResult:
+    rng = rng or random
     result_type = result_type or determine_result_type(scores)
-    ramen_label, ramen_aruaru = _ramen_selection(data, scores)
-    reasons = _natural_reasons(data, scores)
+    ramen_label, ramen_aruaru = _ramen_selection(data, scores, rng)
+    reasons = _natural_reasons(data, scores, rng)
 
     if result_type == "sleep":
         title, verdict, tone = "今日は寝ろ", "特別判決", "sleep"

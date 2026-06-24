@@ -1,3 +1,4 @@
+import random
 from dataclasses import replace
 
 from app.diagnosis import (
@@ -161,6 +162,28 @@ def test_other_selects_a_concrete_ramen_recommendation():
     result = diagnose(make_input(ramen_type="other"))
     assert result.ramen_label in set(RAMEN_TYPE_LABELS.values()) - {"その他"}
     assert result.ramen_aruaru
+
+
+def test_seeded_result_generation_is_reproducible():
+    data = make_input()
+    scores = calculate_scores(data)
+
+    first = generate_result_text(data, scores, rng=random.Random(42))
+    second = generate_result_text(data, scores, rng=random.Random(42))
+
+    assert first == second
+
+
+def test_seed_changes_wording_without_changing_judgment():
+    data = make_input()
+    scores = calculate_scores(data)
+
+    first = generate_result_text(data, scores, rng=random.Random(1))
+    second = generate_result_text(data, scores, rng=random.Random(2))
+
+    assert first.full_text != second.full_text
+    assert first.result_type == second.result_type
+    assert first.scores == second.scores == scores
 
 
 def test_external_urls_are_encoded():
