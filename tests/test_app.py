@@ -46,6 +46,19 @@ def test_health_endpoint():
     assert response.json()["status"] == "ok"
 
 
+def test_top_shows_concise_concept_copy():
+    response = asyncio.run(request("GET", "/"))
+
+    assert response.status_code == 200
+    assert "今日の行いをシスターに告白して、" in response.text
+    assert "ラーメン欲を赦されよう。" in response.text
+    assert 'class="concept-copy"' in response.text
+
+    stylesheet = Path("app/static/style.css").read_text(encoding="utf-8")
+    assert ".concept-copy span { display: inline; }" in stylesheet
+    assert ".concept-copy span { display: block; }" in stylesheet
+
+
 def test_top_and_diagnosis_show_about_and_hide_stats_navigation():
     top = asyncio.run(request("GET", "/"))
     diagnosis = asyncio.run(request("GET", "/diagnosis"))
