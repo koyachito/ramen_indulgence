@@ -110,6 +110,70 @@ def test_frontend_modules_exist():
         assert Path("app/static/js", module_path).is_file()
 
 
+def test_stamp_assets_are_used_by_result_pages_and_canvas():
+    for asset in ("menyoku.png", "suimin.png", "menai.png"):
+        assert Path("app/static/images", asset).is_file()
+
+    standard = asyncio.run(request("POST", "/result", data=VALID_DATA))
+    sleep = asyncio.run(
+        request(
+            "POST",
+            "/result",
+            data={
+                **VALID_DATA,
+                "meals": "4",
+                "ramen_count_today": "3",
+                "achievement": "shorts",
+                "mood": "empty",
+                "after_plan": "more_shorts",
+                "reason_not_to_eat": "ignore",
+                "ramen_type": "iekei",
+                "forgiveness_style": "strict",
+            },
+        )
+    )
+    banzai = asyncio.run(request("POST", "/hidden-judgment"))
+
+    assert "images/menyoku.png" in standard.text
+    assert "images/suimin.png" in sleep.text
+    assert "images/menai.png" in banzai.text
+
+    canvas = Path("app/static/js/certificate_canvas.js").read_text(encoding="utf-8")
+    assert "certificate.dataset.sealImage" in canvas
+    assert "context.drawImage(sealImage" in canvas
+    assert canvas.count("context.drawImage(sealImage, 900, 48, 230, 230);") == 2
+    assert "drawCanvasSeal" not in canvas
+
+
+def test_standard_result_card_uses_dark_background():
+    stylesheet = Path("app/static/style.css").read_text(encoding="utf-8")
+    base_template = Path("app/templates/base.html").read_text(encoding="utf-8")
+    canvas = Path("app/static/js/certificate_canvas.js").read_text(encoding="utf-8")
+
+    assert ".result-card {" in stylesheet
+    assert "color: #eee8dd;" in stylesheet
+    assert "background: transparent !important;" in stylesheet
+    assert "box-shadow: none;" in stylesheet
+    assert "linear-gradient(145deg, #110b15, #1a0f20 48%, #0c0910) !important;" in stylesheet
+    assert "?v=15-dark-results-3" in base_template
+    assert 'context.fillStyle = "#110b15";' in canvas
+    assert 'context.fillStyle = "#f7f0df";' not in canvas
+    assert 'context.strokeStyle = "#a94855";' in canvas
+    assert 'context.strokeStyle = "rgba(169,72,85,.45)";' in canvas
+
+
+def test_ramen_count_copy_avoids_criminal_language():
+    choices_source = Path("app/choices.py").read_text(encoding="utf-8")
+    generator_source = Path("app/result_generator.py").read_text(encoding="utf-8")
+
+    assert "本日一杯目につき、情状酌量の余地があります。" in choices_source
+    assert "本日二杯目ですが、まだ情状酌量の余地はあります。" in choices_source
+    assert "初犯" not in choices_source
+    assert "再犯" not in choices_source
+    assert "初犯" not in generator_source
+    assert 'Choice(1, "1回", "thinking.png"' in choices_source
+
+
 def test_clock_uses_japan_time_for_diagnosis_and_stats():
     clock = Path("app/static/js/clock.js").read_text(encoding="utf-8")
 
@@ -159,7 +223,8 @@ def test_posting_diagnosis_returns_new_result_structure():
     assert "他の文言で赦される" in response.text
     assert response.text.index("ラーメン。") < response.text.index("近くのラーメンを探す")
     assert response.text.index("近くのラーメンを探す") < response.text.index("診断結果を画像で保存")
-    assert "麺欲<br>赦免" in response.text
+    assert "images/menyoku.png" in response.text
+    assert 'alt="麺欲赦免"' in response.text
     assert "images/eating.png" in response.text
     assert 'href="/stats"' in response.text
     assert 'class="about-nav-link" href="/about"' in response.text
@@ -180,6 +245,7 @@ def test_about_shows_creator_and_github_repository_link():
     response = asyncio.run(request("GET", "/about"))
 
     assert response.status_code == 200
+    assert 'href="/stats"' not in response.text
     assert "このアプリは <b>koyachito</b> が制作しました。" in response.text
     assert "GitHub: koyachito/ramen_indulgence" in response.text
     assert (
@@ -253,7 +319,8 @@ def test_exact_hidden_sleep_combination_returns_sleep_from_diagnosis():
     )
     assert response.status_code == 200
     assert "今日は寝ろ" in response.text
-    assert "睡眠<br>直行" in response.text
+    assert "images/suimin.png" in response.text
+    assert 'alt="睡眠直行"' in response.text
 
 
 def test_hidden_command_records_banzai_judgment_with_share_actions():
@@ -266,7 +333,8 @@ def test_hidden_command_records_banzai_judgment_with_share_actions():
     assert "banzai.png" in result.text
     assert "診断結果を画像で保存" in result.text
     assert "診断結果をツイート" in result.text
-    assert "麺愛<br>永遠" in result.text
+    assert "images/menai.png" in result.text
+    assert 'alt="麺愛永遠"' in result.text
     assert "今日も堂々と、ラーメンを愛します" in unquote(result.text)
 
 
