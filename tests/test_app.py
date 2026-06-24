@@ -10,6 +10,7 @@ os.environ["RAMEN_DB_PATH"] = "/tmp/ramen-menzaifu-test.db"
 
 import httpx
 
+from app import rate_limit
 from app.choices import (
     DIAGNOSIS_QUESTIONS,
     QUESTION_MESSAGES,
@@ -274,6 +275,112 @@ def test_reroll_does_not_increment_total():
     assert diagnosis.status_code == reroll.status_code == 200
     assert total_after_diagnosis == total_before_diagnosis + 1
     assert total_after_reroll == total_after_diagnosis
+
+
+def test_result_rate_limit_skips_repeated_statistics_without_breaking_display(
+    monkeypatch,
+):
+    async def scenario():
+        init_db()
+        transport = httpx.ASGITransport(app=app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
+            monkeypatch.setattr(rate_limit.time, "time", lambda: 1_000.0)
+            total_before = get_stats()["total"]
+            first = await client.post("/result", data=VALID_DATA)
+            total_after_first = get_stats()["total"]
+            second = await client.post("/result", data=VALID_DATA)
+            total_after_second = get_stats()["total"]
+            reroll = await client.post(
+                "/result", data={**VALID_DATA, "reroll": "true"}
+            )
+            total_after_reroll = get_stats()["total"]
+            monkeypatch.setattr(
+                rate_limit.time,
+                "time",
+                lambda: 1_000.0 + rate_limit.RECORD_RATE_LIMIT_SECONDS,
+            )
+            after_limit = await client.post("/result", data=VALID_DATA)
+            total_after_limit = get_stats()["total"]
+            return (
+                first,
+                second,
+                reroll,
+                after_limit,
+                total_before,
+                total_after_first,
+                total_after_second,
+                total_after_reroll,
+                total_after_limit,
+                client.cookies,
+            )
+
+    (
+        first,
+        second,
+        reroll,
+        after_limit,
+        total_before,
+        total_after_first,
+        total_after_second,
+        total_after_reroll,
+        total_after_limit,
+        cookies,
+    ) = asyncio.run(scenario())
+
+    assert (
+        first.status_code
+        == second.status_code
+        == reroll.status_code
+        == after_limit.status_code
+        == 200
+    )
+    assert "味噌ラーメンへの欲を赦します" in first.text
+    assert "味噌ラーメンへの欲を赦します" in second.text
+    assert total_after_first == total_before + 1
+    assert total_after_second == total_after_first
+    assert total_after_reroll == total_after_first
+    assert total_after_limit == total_after_first + 1
+    assert "ramen_result_recorded_at" in cookies
+    cookie_header = first.headers["set-cookie"].lower()
+    assert f"max-age={rate_limit.RECORD_RATE_LIMIT_SECONDS}" in cookie_header
+    assert "httponly" in cookie_header
+    assert "samesite=lax" in cookie_header
+
+
+def test_hidden_judgment_rate_limit_skips_repeated_statistics():
+    async def scenario():
+        init_db()
+        transport = httpx.ASGITransport(app=app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
+            total_before = get_stats()["total"]
+            first = await client.post("/hidden-judgment")
+            total_after_first = get_stats()["total"]
+            second = await client.post("/hidden-judgment")
+            total_after_second = get_stats()["total"]
+            return (
+                first,
+                second,
+                total_before,
+                total_after_first,
+                total_after_second,
+                client.cookies,
+            )
+
+    (
+        first,
+        second,
+        total_before,
+        total_after_first,
+        total_after_second,
+        cookies,
+    ) = asyncio.run(scenario())
+
+    assert first.status_code == second.status_code == 200
+    assert "ラーメンばんざい！" in first.text
+    assert "ラーメンばんざい！" in second.text
+    assert total_after_first == total_before + 1
+    assert total_after_second == total_after_first
+    assert "ramen_hidden_recorded_at" in cookies
 
 
 def test_diagnosis_flow_never_returns_hidden_sleep_judgment():
