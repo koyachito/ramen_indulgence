@@ -151,6 +151,18 @@ def test_mobile_navigation_keeps_all_available_links_visible():
     assert ".site-nav { width: 100%; justify-content: flex-end; }" in stylesheet
 
 
+def test_about_shows_creator_and_github_repository_link():
+    response = asyncio.run(request("GET", "/about"))
+
+    assert response.status_code == 200
+    assert "このアプリは <b>koyachito</b> が制作しました。" in response.text
+    assert "GitHub: koyachito/ramen_indulgence" in response.text
+    assert (
+        'href="https://github.com/koyachito/ramen_indulgence" '
+        'target="_blank" rel="noopener"'
+    ) in response.text
+
+
 def test_reroll_does_not_increment_total():
     init_db()
     total_before_diagnosis = get_stats()["total"]
