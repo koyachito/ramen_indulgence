@@ -6,4 +6,4 @@ venv/
 .env
 data/*.db
 !.gitkeep
-
+gimon.md
