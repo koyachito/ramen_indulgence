@@ -61,7 +61,7 @@ export function initInterviewFlow() {
     previousButton.disabled = currentStep === 0;
     const isLast = currentStep === visibleSteps.length - 1;
     autoAdvanceNote.textContent = isLast
-      ? "回答後、自動で審議を始めます"
+      ? "回答後、自動で告白をまとめます"
       : "回答を選ぶと自動で次へ進みます";
     progressBar.style.width = `${((currentStep + 1) / visibleSteps.length) * 100}%`;
     step.querySelector(
@@ -84,7 +84,7 @@ export function initInterviewFlow() {
     diagnosisForm.classList.add("is-reacting");
     previousButton.disabled = true;
     autoAdvanceNote.textContent = currentStep === visibleSteps.length - 1
-      ? "判決をまとめています…"
+      ? "告白をまとめています…"
       : "シスターが確認しています…";
     clearTimeout(advanceTimer);
     advanceTimer = setTimeout(() => {

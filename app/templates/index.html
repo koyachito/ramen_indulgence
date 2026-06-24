@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <section class="hero confessional-hero">
-  <a class="hero-visual hero-confess reveal" href="/diagnosis" aria-label="シスターに懺悔して免罪審議を開始する">
+  <a class="hero-visual hero-confess reveal" href="/diagnosis" aria-label="シスターにラーメン欲を告白する">
     <span class="confessional-arch" aria-hidden="true"></span>
     <span class="concept-copy">
       <span>今日の行いをシスターに告白して、</span>
@@ -9,13 +9,13 @@
     </span>
     <img src="{{ url_for('static', path='images/prayer.png') }}" alt="祈りながら告白を待つピクセルアートのシスター">
     <span class="character-cta">
-      <small>クリックして審議開始</small>
-      <strong>シスターに懺悔する</strong>
+      <small>クリックして告白開始</small>
+      <strong>シスターに告白する</strong>
       <b>→</b>
     </span>
     <span class="click-hint" aria-hidden="true">CLICK</span>
   </a>
 
-  <p class="counter reveal delay-2"><span data-count="{{ total }}">0</span> 件のラーメン欲が審議されました</p>
+  <p class="counter reveal delay-2"><span data-count="{{ total }}">0</span> 件のラーメン欲が告白されました</p>
 </section>
 {% endblock %}

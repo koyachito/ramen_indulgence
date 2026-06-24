@@ -20,15 +20,15 @@
   </article>
   <div class="share-tools reveal">
     <button class="button download-button" id="download-certificate" type="button" data-filename="ramen-menzaifu.png">
-      診断結果を画像で保存
+      赦しの画像を保存
     </button>
     <a class="button x-button" href="{{ share_url }}" target="_blank" rel="noopener">
-      診断結果をツイート
+      赦しの結果をツイート
     </a>
     <p class="share-status" id="share-status" aria-live="polite"></p>
   </div>
   <div class="result-actions reveal">
-    <a class="button retry-button magnetic" href="/diagnosis"><span>↻</span> もう一度診断する</a>
+    <a class="button retry-button magnetic" href="/diagnosis"><span>↻</span> もう一度告白する</a>
   </div>
   {% else %}
   <article
@@ -40,7 +40,7 @@
   >
     <p class="verdict-label">{{ result.verdict }}</p>
     <h1 class="{% if result.result_type == 'sleep' %}sleep-title{% endif %}">{{ result.title }}</h1>
-    <img class="result-sister" src="{{ url_for('static', path='images/' + result.image) }}" alt="判決を伝えるシスター">
+    <img class="result-sister" src="{{ url_for('static', path='images/' + result.image) }}" alt="赦しを伝えるシスター">
     <div class="result-copy">
       <p class="result-text">{{ result.full_text }}</p>
       <div class="result-primary-actions">
@@ -51,10 +51,10 @@
       </div>
       <div class="share-tools">
         <button class="button download-button" id="download-certificate" type="button" data-filename="ramen-menzaifu.png">
-          診断結果を画像で保存
+          赦しの画像を保存
         </button>
         <a class="button x-button" href="{{ share_url }}" target="_blank" rel="noopener">
-          診断結果をツイート
+          赦しの結果をツイート
         </a>
         <p class="share-status" id="share-status" aria-live="polite"></p>
       </div>
@@ -87,11 +87,11 @@
       <input type="hidden" name="reroll" value="true">
       <button class="button reroll-button" type="submit">他の文言で赦される</button>
     </form>
-    <a class="button retry-button magnetic" href="/diagnosis"><span>↻</span> もう一度診断する</a>
+    <a class="button retry-button magnetic" href="/diagnosis"><span>↻</span> もう一度告白する</a>
   </div>
   {% endif %}
-  <p class="result-total">これまでに <b>{{ total }}</b> 回、ラーメン欲が審議されました。</p>
-  <a class="result-stats-link" href="/stats">判決統計を見る →</a>
+  <p class="result-total">これまでに <b>{{ total }}</b> 回、ラーメン欲が告白されました。</p>
+  <a class="result-stats-link" href="/stats">赦しの記録を見る →</a>
   <p class="disclaimer">この免罪符はジョークです。医学・栄養学上の判断ではありません。</p>
 </section>
 {% endblock %}

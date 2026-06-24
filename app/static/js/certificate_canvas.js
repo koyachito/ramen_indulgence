@@ -132,7 +132,7 @@ export async function createCertificateImage() {
   context.font = '600 19px "Yu Gothic", sans-serif';
   context.fillText(`発行対象：${ramen}`, 90, 1065);
   context.fillText(`発行日時：${issuedAt}`, 90, 1103);
-  context.drawImage(sealImage, 900, 48, 230, 230);
+  context.drawImage(sealImage, 920, 940, 180, 180);
   context.textAlign = "right";
   context.fillText("#ラーメン免罪符", 1110, 1130);
 

@@ -27,10 +27,10 @@ def select_sister_image(scores: DiagnosisScores, result_type: str) -> str:
 
 def _caution_reason(danger_score: int, rng=random) -> str:
     if danger_score >= 4:
-        return rng.choice(("通常であれば止めるべき案件です", "かなり厳しい審議となりました"))
+        return rng.choice(("通常なら少し立ち止まって休むべきです", "シスターも少し心配しています"))
     if danger_score >= 2:
-        return rng.choice(("慎重な判断が必要です", "罪の気配がないとは言えません"))
-    return rng.choice(("特に大きな問題は見当たりません", "審議は比較的穏やかに進みました"))
+        return rng.choice(("慎重に受け止めるべき迷いがあります", "無理をしないことも大切です"))
+    return rng.choice(("特に大きな迷いは見当たりません", "シスターは穏やかに話を聞きました"))
 
 
 def _date_context(data: DiagnosisInput) -> str:
@@ -55,8 +55,8 @@ def _ramen_count_context(data: DiagnosisInput) -> str:
     if data.meals < 3:
         return ""
     return {
-        0: "三食の中にラーメンはなく、本日一杯目につき情状酌量の余地があります",
-        1: "すでに一杯食べているため、次は二杯目です",
+        0: "三食の中にラーメンはなく、本日一杯目として穏やかに赦されます",
+        1: "すでに一杯食べていますが、まだ赦しの余地はあります",
         2: "今日はすでに二杯。十分に麺へ尽くしています",
         3: "今日は三杯以上。これは食事というより巡礼です",
     }[data.ramen_count_today]
@@ -104,20 +104,20 @@ def generate_result_text(
     reasons = _natural_reasons(data, scores, rng)
 
     if result_type == "sleep":
-        title, verdict, tone = "今日は寝ろ", "特別判決", "sleep"
+        title, verdict, tone = "今日は寝ろ", "休息の勧め", "sleep"
         conclusion = "今日は寝ろ"
         full_text = "今日は寝ろ"
     else:
         metadata = {
-            "forgiven": ("赦し", "免罪判決", "success"),
-            "worry": ("慎重な赦し", "要注意判決", "warning"),
-            "angry": ("反省付きの赦し", "厳重審議", "danger"),
-            "ogre": ("鬼審議の末の赦し", "重大審議", "danger"),
+            "forgiven": ("赦し", "麺欲赦免", "success"),
+            "worry": ("慎重な赦し", "かなり慎重な赦し", "warning"),
+            "angry": ("反省付きの赦し", "深い反省付きの赦し", "danger"),
+            "ogre": ("鬼反省付きの赦し", "深い赦し", "danger"),
         }
         title, verdict, tone = metadata[result_type]
-        conclusion = f"{ramen_label}ラーメン一杯は赦されました。ラーメン。"
+        conclusion = f"{ramen_label}ラーメンへの欲は赦されました。ラーメン。"
         full_text = "\n".join(
-            (*reasons, f"{ramen_label}ラーメン一杯を赦します。", "ラーメン。")
+            (*reasons, f"{ramen_label}ラーメンへの欲を赦します。", "ラーメン。")
         )
 
     return DiagnosisResult(

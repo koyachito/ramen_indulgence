@@ -40,7 +40,7 @@ def test_low_risk_input_is_forgiven_and_ends_with_ramen():
     assert result.result_type == "forgiven"
     assert result.image == "eating.png"
     assert result.full_text.endswith("ラーメン。")
-    assert "味噌ラーメン一杯を赦します" in result.full_text
+    assert "味噌ラーメンへの欲を赦します" in result.full_text
     assert "事情があります" not in result.full_text
     assert "迷っている時間" not in result.full_text
     assert len(result.reasons) == 3

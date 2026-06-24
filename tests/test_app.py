@@ -1,6 +1,8 @@
 import asyncio
+import csv
 import json
 import os
+import re
 from pathlib import Path
 from urllib.parse import unquote
 
@@ -141,7 +143,8 @@ def test_stamp_assets_are_used_by_result_pages_and_canvas():
     canvas = Path("app/static/js/certificate_canvas.js").read_text(encoding="utf-8")
     assert "certificate.dataset.sealImage" in canvas
     assert "context.drawImage(sealImage" in canvas
-    assert canvas.count("context.drawImage(sealImage, 900, 48, 230, 230);") == 2
+    assert "context.drawImage(sealImage, 900, 48, 230, 230);" in canvas
+    assert "context.drawImage(sealImage, 920, 940, 180, 180);" in canvas
     assert "drawCanvasSeal" not in canvas
 
 
@@ -155,19 +158,19 @@ def test_standard_result_card_uses_dark_background():
     assert "background: transparent !important;" in stylesheet
     assert "box-shadow: none;" in stylesheet
     assert "linear-gradient(145deg, #110b15, #1a0f20 48%, #0c0910) !important;" in stylesheet
-    assert "?v=15-dark-results-3" in base_template
+    assert "?v=16-confession-copy" in base_template
     assert 'context.fillStyle = "#110b15";' in canvas
     assert 'context.fillStyle = "#f7f0df";' not in canvas
     assert 'context.strokeStyle = "#a94855";' in canvas
     assert 'context.strokeStyle = "rgba(169,72,85,.45)";' in canvas
 
 
-def test_ramen_count_copy_avoids_criminal_language():
+def test_ramen_count_copy_uses_confession_language():
     choices_source = Path("app/choices.py").read_text(encoding="utf-8")
     generator_source = Path("app/result_generator.py").read_text(encoding="utf-8")
 
-    assert "本日一杯目につき、情状酌量の余地があります。" in choices_source
-    assert "本日二杯目ですが、まだ情状酌量の余地はあります。" in choices_source
+    assert "本日一杯目として、穏やかに赦されます。" in choices_source
+    assert "本日二杯目ですが、まだ赦しの余地はあります。" in choices_source
     assert "初犯" not in choices_source
     assert "再犯" not in choices_source
     assert "初犯" not in generator_source
@@ -212,17 +215,17 @@ def test_server_choice_validation_uses_central_definitions():
 def test_posting_diagnosis_returns_new_result_structure():
     response = asyncio.run(request("POST", "/result", data=VALID_DATA))
     assert response.status_code == 200
-    assert "味噌ラーメン一杯を赦します" in response.text
+    assert "味噌ラーメンへの欲を赦します" in response.text
     assert "事情があります" not in response.text
     assert "ラーメン。" in response.text
     assert "近くのラーメンを探す" in response.text
-    assert "診断結果を画像で保存" in response.text
-    assert "診断結果をツイート" in response.text
+    assert "赦しの画像を保存" in response.text
+    assert "赦しの結果をツイート" in response.text
     assert "投稿文をコピー" not in response.text
     assert "https://ramen-indulgence.onrender.com/" in unquote(response.text)
     assert "他の文言で赦される" in response.text
     assert response.text.index("ラーメン。") < response.text.index("近くのラーメンを探す")
-    assert response.text.index("近くのラーメンを探す") < response.text.index("診断結果を画像で保存")
+    assert response.text.index("近くのラーメンを探す") < response.text.index("赦しの画像を保存")
     assert "images/menyoku.png" in response.text
     assert 'alt="麺欲赦免"' in response.text
     assert "images/eating.png" in response.text
@@ -291,9 +294,9 @@ def test_diagnosis_flow_never_returns_hidden_sleep_judgment():
             return first, second, third, client.cookies
 
     first, second, third, cookies = asyncio.run(scenario())
-    assert "鬼審議の末の赦し" in first.text
-    assert "鬼審議の末の赦し" in second.text
-    assert "鬼審議の末の赦し" in third.text
+    assert "鬼反省付きの赦し" in first.text
+    assert "鬼反省付きの赦し" in second.text
+    assert "鬼反省付きの赦し" in third.text
     assert "今日は寝ろ" not in third.text
     assert "oni_count" not in cookies
     assert "sleep_until" not in cookies
@@ -331,8 +334,8 @@ def test_hidden_command_records_banzai_judgment_with_share_actions():
     assert result.status_code == 200
     assert "ラーメンばんざい！" in result.text
     assert "banzai.png" in result.text
-    assert "診断結果を画像で保存" in result.text
-    assert "診断結果をツイート" in result.text
+    assert "祝福の画像を保存" in result.text
+    assert "祝福の結果をツイート" in result.text
     assert "images/menai.png" in result.text
     assert 'alt="麺愛永遠"' in result.text
     assert "今日も堂々と、ラーメンを愛します" in unquote(result.text)
@@ -341,5 +344,31 @@ def test_hidden_command_records_banzai_judgment_with_share_actions():
 def test_stats_list_sleep_and_hidden_banzai_separately():
     stats = asyncio.run(request("GET", "/stats"))
     assert stats.status_code == 200
-    assert "今日は寝ろ（幻の判決）" in stats.text
+    assert "今日は寝ろ（幻の助言）" in stats.text
     assert "ラーメンばんざい！（どこかに隠された祝福）" in stats.text
+
+
+def test_copy_matches_mongonshusei_csv():
+    with Path("mongonshusei.csv").open(encoding="utf-8-sig", newline="") as file:
+        rows = csv.DictReader(file)
+        changed_rows = [row for row in rows if row["文言"] != row["修正後文言"]]
+
+    for row in changed_rows:
+        source = Path(row["ファイル名"]).read_text(encoding="utf-8")
+        source_without_tags = re.sub(r"<[^>]+>", "", source)
+        assert (
+            row["修正後文言"] in source
+            or row["修正後文言"] in source_without_tags
+        ), f'{row["ファイル名"]}: {row["修正後文言"]}'
+
+
+def test_result_stamp_does_not_overlap_result_heading():
+    stylesheet = Path("app/static/style.css").read_text(encoding="utf-8")
+    canvas = Path("app/static/js/certificate_canvas.js").read_text(encoding="utf-8")
+
+    assert "min-height: 124px;" in stylesheet
+    assert "padding-right: 145px;" in stylesheet
+    assert "bottom: 26px;" in stylesheet
+    assert "min-height: 96px; padding-right: 105px;" in stylesheet
+    assert "bottom: 20px; width: 92px; height: 92px;" in stylesheet
+    assert "context.drawImage(sealImage, 920, 940, 180, 180);" in canvas

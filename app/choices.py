@@ -86,17 +86,17 @@ DIAGNOSIS_QUESTIONS = (
         (
             Choice(0, "まだ何も食べていない", "worry.png", "むしろ食べてください！ラーメン以前に、まず食事です！"),
             Choice(1, "1食だけ", "thinking.png", "まだ余地がありますね。話を続けましょう。"),
-            Choice(2, "2食食べた", "thinking.png", "一般的な食生活の範囲です。落ち着いて審議できます。"),
-            Choice(3, "3食食べた", "worry.png", "すでに三食……慎重な判断が必要です。"),
+            Choice(2, "2食食べた", "thinking.png", "一般的な食生活の範囲です。落ち着いて話を聞けます。"),
+            Choice(3, "3食食べた", "worry.png", "すでに三食……慎重に受け止めます。"),
             Choice(4, "4食以上 / 記憶があいまい", "angry.png", "記憶があいまいになるほど食べたのですか……？"),
         ),
     ),
     Question(
-        "ramen_count_today", "そのうちラーメンは何回でしたか？", "追加審議", "worry.png",
+        "ramen_count_today", "そのうちラーメンは何回でしたか？", "追加告白", "worry.png",
         "念のため確認します。そのうちラーメンは何回でしたか？",
         (
-            Choice(0, "まだ食べていない", "thinking.png", "本日一杯目につき、情状酌量の余地があります。"),
-            Choice(1, "1回", "thinking.png", "本日二杯目ですが、まだ情状酌量の余地はあります。"),
+            Choice(0, "まだ食べていない", "thinking.png", "本日一杯目として、穏やかに赦されます。"),
+            Choice(1, "1回", "thinking.png", "本日二杯目ですが、まだ赦しの余地はあります。"),
             Choice(2, "2回", "worry.png", "体調は大丈夫ですか……？ 少し水も飲んでくださいね。"),
             Choice(3, "3回以上", "worry.png", "これはもはやラーメン巡礼です。体調は本当に大丈夫ですか……？"),
         ),
@@ -106,9 +106,9 @@ DIAGNOSIS_QUESTIONS = (
         "achievement", "今日なしとげたことは？", "QUESTION 2 / 7", "thinking.png",
         "次に、今日なしとげたことを教えてください。小さなことでも構いません。",
         (
-            Choice(Achievement.WORKED, "仕事・勉強をした", "thumbup.png", "労働または学習の実績を確認しました。これは強い赦し材料です。"),
+            Choice(Achievement.WORKED, "仕事・勉強をした", "thumbup.png", "労働または学習の実績を確認しました。これはよい赦し材料です。"),
             Choice(Achievement.WENT_OUT, "外に出た", "thumbup.png", "外に出た。それだけで今日はもう一仕事です。"),
-            Choice(Achievement.WALKED, "歩いた", "thumbup.png", "歩いた者には、麺へ向かう資格があります。"),
+            Choice(Achievement.WALKED, "歩いた", "thumbup.png", "歩いた者には、麺へ向かう理由があります。"),
             Choice(Achievement.HOUSEWORK, "家事をした", "thumbup.png", "生活を維持した者には、温かい一杯が必要です。"),
             Choice(Achievement.WOKE_EARLY, "少し早く起きた", "thinking.png", "起床という第一の修行を終えていますね。"),
             Choice(Achievement.KINDNESS, "人にやさしくした", "thumbup.png", "人にやさしくしたなら、今日はあなたにもやさしくしてよいでしょう。"),
@@ -123,7 +123,7 @@ DIAGNOSIS_QUESTIONS = (
         "では、今の心の状態を教えてください。",
         (
             Choice(Mood.TIRED, "疲れている", "worry.png", "疲れているのですね。温かいものが必要かもしれません。"),
-            Choice(Mood.HUNGRY, "腹が減っている", "thumbup.png", "空腹は重要な証言です。これは食事の必要性があります。"),
+            Choice(Mood.HUNGRY, "腹が減っている", "thumbup.png", "空腹は大切な告白です。これは食事の必要性があります。"),
             Choice(Mood.ANGRY, "むしゃくしゃしている", "worry.png", "むしゃくしゃしているのですね。まずは深呼吸しましょう。"),
             Choice(Mood.LONELY, "ちょっと寂しい", "worry.png", "それなら、せめて温かい丼にそばにいてもらいましょう。"),
             Choice(Mood.PROUD, "達成感がある", "thumbup.png", "達成感がある日のラーメンは、ほぼ祝杯です。"),
@@ -134,10 +134,10 @@ DIAGNOSIS_QUESTIONS = (
         "after_plan", "今から何をする予定ですか？", "QUESTION 4 / 7", "thinking.png",
         "ラーメンのあと、何をする予定ですか？",
         (
-            Choice(AfterPlan.WORK_MORE, "まだ作業する", "thumbup.png", "追加作業の燃料として、ラーメンが申請されています。"),
+            Choice(AfterPlan.WORK_MORE, "まだ作業する", "thumbup.png", "追加作業の支えとして、ラーメンが役に立つかもしれません。"),
             Choice(AfterPlan.SLEEP, "寝るだけ", "worry.png", "寝るだけなら、本当に食べる必要がありますか……？"),
             Choice(AfterPlan.GO_HOME, "帰るだけ", "thinking.png", "帰路の一杯。古くからある赦しです。"),
-            Choice(AfterPlan.MEET_PEOPLE, "人と会う", "thinking.png", "人と会う前のラーメンは、においも含めて審議します。"),
+            Choice(AfterPlan.MEET_PEOPLE, "人と会う", "thinking.png", "人と会う前のラーメンは、においまで含めて少し気にしましょう。"),
             Choice(AfterPlan.NOTHING, "特に何もない", "thinking.png", "予定がないなら、ラーメンを予定にできます。"),
             Choice(AfterPlan.MORE_SHORTS, "ショート動画を見る", "angry.png", "まだ見るのですか……？ それは懺悔が必要です。"),
         ),
@@ -146,14 +146,14 @@ DIAGNOSIS_QUESTIONS = (
         "reason_not_to_eat", "ラーメンを食べない理由はありますか？", "QUESTION 5 / 7", "thinking.png",
         "ラーメンを食べない理由はありますか？",
         (
-            Choice(ReasonNotToEat.NONE, "ない", "thumbup.png", "では、障害はありませんね。"),
-            Choice(ReasonNotToEat.YES, "ある", "worry.png", "あるのですね……それでも食べたい、と。記録します。"),
-            Choice(ReasonNotToEat.IGNORE, "ある気がするが、見ないことにした", "angry.png", "見ないことにした罪は軽くありません。"),
+            Choice(ReasonNotToEat.NONE, "ない", "thumbup.png", "では、妨げるものはありませんね。"),
+            Choice(ReasonNotToEat.YES, "ある", "worry.png", "あるのですね……それでも食べたい、と。受け止めます。"),
+            Choice(ReasonNotToEat.IGNORE, "ある気がするが、見ないことにした", "angry.png", "目をそらしたことは、少しだけ懺悔してください。"),
         ),
     ),
     Question(
         "ramen_type", "食べたいラーメンの系統は？", "QUESTION 6 / 7", "thinking.png",
-        "食べたい系統を選んでください。ここでは全て赦しの対象です。",
+        "食べたい系統を選んでください。どのラーメン欲も赦しの対象です。",
         (
             Choice(RamenType.SHOYU, "醤油", "thumbup.png", "醤油、王道ですね。よい選択です。"),
             Choice(RamenType.MISO, "味噌", "thumbup.png", "味噌は疲労に寄り添います。よい選択です。"),
@@ -174,13 +174,13 @@ DIAGNOSIS_QUESTIONS = (
     ),
     Question(
         "forgiveness_style", "どんなふうに赦されたいですか？", "QUESTION 7 / 7", "thinking.png",
-        "最後の審議です。どんなふうに赦されたいですか？",
+        "最後の告白です。どんなふうに赦されたいですか？",
         (
-            Choice(ForgivenessStyle.PRAISE, "褒めてほしい", "thumbup.png", "あなたの今日を肯定する方向で審議します。"),
+            Choice(ForgivenessStyle.PRAISE, "褒めてほしい", "thumbup.png", "あなたの今日を肯定する方向で受け止めます。"),
             Choice(ForgivenessStyle.SPOIL, "甘やかしてほしい", "thinking.png", "今日は甘やかされたい日なのですね。よいでしょう。"),
             Choice(ForgivenessStyle.STRICT, "厳しくてもいい", "angry.png", "厳しくてもいい、と言いましたね？"),
             Choice(ForgivenessStyle.PUSH, "雑に背中を押してほしい", "thumbup.png", "迷いを断ち切る赦しを希望ですね。"),
-            Choice(ForgivenessStyle.ORACLE, "神のお告げっぽく", "thinking.png", "麺の啓示を求める者として記録します。"),
+            Choice(ForgivenessStyle.ORACLE, "神のお告げっぽく", "thinking.png", "麺の啓示を求める者として受け止めます。"),
         ),
     ),
 )
