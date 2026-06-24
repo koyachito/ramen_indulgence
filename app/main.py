@@ -7,6 +7,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from .choices import DIAGNOSIS_QUESTIONS, QUESTION_MESSAGES, VALID_CHOICE_VALUES
 from .database import get_stats, init_db, record_judgment, record_result
 from .diagnosis import RAMEN_TYPES, diagnose, maps_url, share_text, x_share_url
 from .models import DiagnosisInput
@@ -41,7 +42,11 @@ async def diagnosis_form(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="diagnosis.html",
-        context={"show_stats": False},
+        context={
+            "show_stats": False,
+            "diagnosis_questions": DIAGNOSIS_QUESTIONS,
+            "question_messages": QUESTION_MESSAGES,
+        },
     )
 
 
@@ -61,14 +66,6 @@ async def result(
     forgiveness_style: str = Form(...),
     reroll: bool = Form(False),
 ):
-    valid_values = {
-        "achievement": {"worked", "went_out", "walked", "housework", "woke_early", "kindness", "oshi", "shorts", "nothing"},
-        "mood": {"tired", "hungry", "angry", "lonely", "proud", "empty"},
-        "after_plan": {"work_more", "sleep", "go_home", "meet_people", "nothing", "more_shorts"},
-        "reason_not_to_eat": {"none", "yes", "ignore"},
-        "ramen_type": {"shoyu", "miso", "shio", "tonkotsu", "iekei", "jiro", "tsukemen", "other"},
-        "forgiveness_style": {"praise", "spoil", "strict", "push", "oracle"},
-    }
     submitted = {
         "achievement": achievement,
         "mood": mood,
@@ -77,7 +74,7 @@ async def result(
         "ramen_type": ramen_type,
         "forgiveness_style": forgiveness_style,
     }
-    if any(value not in valid_values[name] for name, value in submitted.items()):
+    if any(value not in VALID_CHOICE_VALUES[name] for name, value in submitted.items()):
         return RedirectResponse(url="/diagnosis", status_code=303)
     try:
         selected_date = date(2000, current_month, current_day)

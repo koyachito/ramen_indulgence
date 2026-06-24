@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 from pathlib import Path
 from urllib.parse import unquote
@@ -7,6 +8,12 @@ os.environ["RAMEN_DB_PATH"] = "/tmp/ramen-menzaifu-test.db"
 
 import httpx
 
+from app.choices import (
+    DIAGNOSIS_QUESTIONS,
+    QUESTION_MESSAGES,
+    RAMEN_TYPE_LABELS,
+    VALID_CHOICE_VALUES,
+)
 from app.database import get_stats, init_db
 from app.main import app
 
@@ -51,8 +58,45 @@ def test_top_and_diagnosis_hide_stats_navigation():
     assert 'id="next-question"' not in diagnosis.text
     assert "回答を選ぶと自動で次へ進みます" in diagnosis.text
     assert "<legend" not in diagnosis.text
+    for question in DIAGNOSIS_QUESTIONS:
+        assert f'data-question="{question.name}"' in diagnosis.text
+        for choice in question.choices:
+            assert f'name="{question.name}" value="{choice.value}"' in diagnosis.text
+            assert choice.label in diagnosis.text
+    assert "diagnosis-question-config" in diagnosis.text
+    embedded_config = diagnosis.text.split(
+        '<script id="diagnosis-question-config" type="application/json">', 1
+    )[1].split("</script>", 1)[0]
+    assert json.loads(embedded_config) == QUESTION_MESSAGES
     script = Path("app/static/script.js").read_text(encoding="utf-8")
     assert 'input.addEventListener("click"' in script
+    assert "JSON.parse(questionConfig.textContent)" in script
+    assert "const QUESTION_MESSAGES = {" not in script
+
+
+def test_server_choice_validation_uses_central_definitions():
+    assert set(QUESTION_MESSAGES) == set(VALID_CHOICE_VALUES)
+    for name, messages in QUESTION_MESSAGES.items():
+        assert set(messages["reactions"]) == VALID_CHOICE_VALUES[name]
+    assert RAMEN_TYPE_LABELS["other"] == "その他"
+
+    for name, values in VALID_CHOICE_VALUES.items():
+        if name not in VALID_DATA:
+            continue
+        response = asyncio.run(
+            request(
+                "POST",
+                "/result",
+                data={**VALID_DATA, name: next(iter(values))},
+            )
+        )
+        assert response.status_code == 200
+
+    response = asyncio.run(
+        request("POST", "/result", data={**VALID_DATA, "mood": "not-defined"})
+    )
+    assert response.status_code == 303
+    assert response.headers["location"] == "/diagnosis"
 
 
 def test_posting_diagnosis_returns_new_result_structure():
