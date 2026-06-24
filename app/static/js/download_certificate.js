@@ -8,7 +8,7 @@ export function initCertificateDownload() {
   downloadCertificate.addEventListener("click", async () => {
     const status = $("#share-status");
     downloadCertificate.disabled = true;
-    status.textContent = "免罪符画像を生成しています…";
+    status.textContent = "免罪符の画像を生成しています…";
     try {
       const blob = await createCertificateImage();
       const download = document.createElement("a");
@@ -16,9 +16,9 @@ export function initCertificateDownload() {
       download.download = downloadCertificate.dataset.filename;
       download.click();
       setTimeout(() => URL.revokeObjectURL(download.href), 1000);
-      status.textContent = "免罪符画像をダウンロードしました。";
+      status.textContent = "免罪符の画像をダウンロードしました。";
     } catch (_) {
-      status.textContent = "免罪符画像を生成できませんでした。";
+      status.textContent = "免罪符の画像を生成できませんでした。";
     } finally {
       downloadCertificate.disabled = false;
     }

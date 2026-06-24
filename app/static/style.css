@@ -310,7 +310,8 @@ input[type="range"] { width: 100%; accent-color: var(--purple-2); cursor: pointe
 .certificate::before { left: 35px; }.certificate::after { right: 35px; }
 .certificate-rule { position: absolute; inset: 14px; border: 1px solid rgba(68,43,69,.35); pointer-events: none; }
 .verdict-label {
-  margin: 0 110px 14px;
+  margin: 0 0 14px;
+  padding: 0 12px;
   color: var(--red);
   font-size: clamp(16px, 2.3vw, 21px);
   font-weight: 900;
@@ -658,7 +659,7 @@ input[type="range"] { width: 100%; accent-color: var(--purple-2); cursor: pointe
   box-shadow: none;
 }
 .result-card h1 {
-  margin: 8px 0 5px;
+  margin: 8px 0 46px;
   color: #e8d8ee;
   font: 700 clamp(42px,7vw,72px) "Yu Mincho", serif;
 }
@@ -669,7 +670,7 @@ input[type="range"] { width: 100%; accent-color: var(--purple-2); cursor: pointe
 .result-sister {
   width: min(320px, 72vw);
   height: 300px;
-  margin: 0 auto -5px;
+  margin: 0 auto 32px;
   object-fit: contain;
   filter: drop-shadow(0 15px 18px rgba(0,0,0,.45));
 }
@@ -755,15 +756,14 @@ input[type="range"] { width: 100%; accent-color: var(--purple-2); cursor: pointe
   grid-template-columns: auto 1fr;
   gap: 8px 16px;
   margin-top: 22px;
-  padding-right: 100px;
   text-align: left;
   font-size: 11px;
 }
 .result-meta span { color: #aaa0ad; }
 .result-seal {
   position: absolute;
-  right: 28px;
-  top: 42px;
+  right: 18px;
+  top: 34px;
   width: 124px;
   height: 124px;
   object-fit: contain;
@@ -848,7 +848,7 @@ input[type="range"] { width: 100%; accent-color: var(--purple-2); cursor: pointe
 }
 .sleep-only-result img {
   width: min(350px, 72vw);
-  margin-bottom: -35px;
+  margin-bottom: 12px;
   animation: character-float 4s ease-in-out infinite;
 }
 .sleep-only-result h1 {
@@ -1007,15 +1007,16 @@ footer { background: #1d1227; color: rgba(255,255,255,.72); padding: 35px 24px; 
   .auto-advance-note { flex: 1.4; text-align: center; line-height: 1.5; }
   .step-button { min-width: 0; flex: 1; min-height: 50px; padding: 8px 10px; }
   .result-page { padding: 30px 12px 70px; }
-  .result-card { padding: 35px 20px 25px; }
+  .result-card { padding: 136px 20px 25px; }
   .result-sister { height: 230px; }
   .result-copy { padding: 24px 10px; }
   .result-text { line-height: 1.85; }
-  .result-meta { grid-template-columns: 1fr; padding-right: 75px; }
+  .result-meta { grid-template-columns: 1fr; }
   .result-meta span { margin-top: 7px; }
-  .verdict-label { margin: 0 78px 12px; font-size: 16px; letter-spacing: .16em; }
-  .result-card > .result-seal { right: 8px; top: -16px; width: 92px; height: 92px; }
-  .sleep-only-result { min-height: 480px; }
+  .verdict-label { margin-bottom: 12px; font-size: 16px; letter-spacing: .12em; }
+  .result-card > .result-seal { right: 18px; top: 26px; width: 92px; height: 92px; }
+  .sleep-only-result { min-height: 520px; justify-content: flex-start; padding-top: 150px; }
+  .sleep-only-result h1 { font-size: clamp(52px, 16vw, 64px); white-space: nowrap; }
   .sleep-only-result .sleep-seal { right: 10px; top: 38px; width: 92px; height: 92px; }
   .banzai-result { min-height: 480px; }
   .banzai-result h1 span { display: block; }

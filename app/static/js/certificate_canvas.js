@@ -91,19 +91,20 @@ export async function createCertificateImage() {
   context.lineWidth = 1;
   context.strokeRect(48, 48, 1104, 1104);
   context.textAlign = "center";
+  context.drawImage(image, 435, 55, 330, 330);
+  context.drawImage(sealImage, 900, 70, 180, 180);
   context.fillStyle = "#9f273a";
   context.font = '900 34px "Yu Gothic", sans-serif';
-  context.fillText(verdict, 600, 96);
+  context.fillText(verdict, 600, 435);
   context.fillStyle = "#e8d8ee";
   context.font = '700 64px "Yu Mincho", serif';
-  context.fillText(title, 600, 165);
-  context.drawImage(image, 420, 175, 360, 360);
+  context.fillText(title, 600, 520);
 
   context.textAlign = "left";
   context.fillStyle = "#eee8dd";
   context.font = '600 25px "Yu Mincho", serif';
   const lines = wrapCanvasText(context, text, 980);
-  let y = 560;
+  let y = 610;
   lines.forEach((line) => {
     if (line === "ラーメン。") {
       context.fillStyle = "#e8d8ee";
@@ -132,7 +133,6 @@ export async function createCertificateImage() {
   context.font = '600 19px "Yu Gothic", sans-serif';
   context.fillText(`発行対象：${ramen}`, 90, 1065);
   context.fillText(`発行日時：${issuedAt}`, 90, 1103);
-  context.drawImage(sealImage, 900, 48, 230, 230);
   context.textAlign = "right";
   context.fillText("#ラーメン免罪符", 1110, 1130);
 

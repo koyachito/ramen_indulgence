@@ -1,15 +1,15 @@
 {% extends "base.html" %}
-{% block title %}判決統計 | ラーメン免罪符{% endblock %}
+{% block title %}赦しの記録 | ラーメン免罪符{% endblock %}
 {% block content %}
 <section class="simple-page stats-page">
-  <p class="eyebrow">COURT RECORDS</p>
-  <h1>これまでの<br>判決記録。</h1>
-  <div class="total-card"><span>総審議件数</span><b data-count="{{ stats.total }}">0</b><small>cases</small></div>
+  <p class="eyebrow">CONFESSION RECORDS</p>
+  <h1>これまでの<br>赦しの記録。</h1>
+  <div class="total-card"><span>総告白件数</span><b data-count="{{ stats.total }}">0</b><small>confessions</small></div>
 
   <div class="stats-grid">
     <section class="stats-panel reveal">
-      <p class="panel-kicker">JUDGMENTS</p>
-      <h2>免罪判決の分布</h2>
+      <p class="panel-kicker">BLESSINGS</p>
+      <h2>赦しの分布</h2>
       <div class="stat-list">
         {% for key, label in labels.items() %}
         {% set count = stats.results.get(key, 0) %}
@@ -21,7 +21,7 @@
     <section class="stats-panel reveal delay-1">
       <p class="panel-kicker">RAMEN TYPES</p>
       <h2>この時間帯、みんなが食べたい一杯</h2>
-      <p class="time-window">{{ stats.time_label }}に審議した人の選択</p>
+      <p class="time-window">{{ stats.time_label }}に告白した人の選択</p>
       <div class="stat-list ramen-stats">
         {% for ramen in ramen_types %}
         {% set count = stats.ramen.get(ramen, 0) %}
@@ -33,6 +33,6 @@
       {% endif %}
     </section>
   </div>
-  <a class="button primary" href="/diagnosis">あなたも審議する →</a>
+  <a class="button primary" href="/diagnosis">あなたも告白する →</a>
 </section>
 {% endblock %}

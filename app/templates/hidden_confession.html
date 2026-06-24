@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}審議中 | ラーメン免罪符{% endblock %}
+{% block title %}祈りの途中 | ラーメン免罪符{% endblock %}
 {% block content %}
 <section class="hidden-trial">
   <img src="{{ url_for('static', path='images/thinking.png') }}" alt="考え込むシスター">
-  <p>審議中...</p>
+  <p>祈っています...</p>
   <span aria-hidden="true"></span>
   <form action="/hidden-judgment" method="post" data-auto-submit="2200"></form>
 </section>

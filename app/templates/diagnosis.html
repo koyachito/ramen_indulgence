@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}免罪審議 | ラーメン免罪符{% endblock %}
+{% block title %}懺悔室 | ラーメン免罪符{% endblock %}
 {% block content %}
 <section class="interview-page">
   <form class="interview-card" action="/result" method="post" id="diagnosis-form">
@@ -18,7 +18,7 @@
       >
       <div class="sister-dialogue">
         <span>SISTER</span>
-        <p id="sister-message">正直に答えてください。ラーメンの赦しは、そこから始まります。</p>
+        <p id="sister-message">正直に答えてください。ラーメン欲の赦しは、告白から始まります。</p>
       </div>
     </div>
 
@@ -47,7 +47,7 @@
 
     <div class="issuing-overlay" aria-hidden="true">
       <img src="{{ url_for('static', path='images/prayer.png') }}" alt="">
-      <b>審議中...</b><span></span>
+      <b>告白を聞いています...</b><span></span>
     </div>
   </form>
 </section>

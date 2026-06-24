@@ -2,7 +2,10 @@ import { $, $$ } from "./dom.js";
 import { updateClock } from "./clock.js";
 import { loadQuestionMessages } from "./question_messages.js";
 
-const SISTER_REACTION_DISPLAY_MS = 3000;
+const SISTER_REACTION_TOTAL_MS = 2300;
+const QUESTION_ENTER_ANIMATION_MS = 450;
+const SISTER_REACTION_ADVANCE_MS =
+  SISTER_REACTION_TOTAL_MS - QUESTION_ENTER_ANIMATION_MS;
 
 export function initInterviewFlow() {
   const diagnosisForm = $("#diagnosis-form");
@@ -61,7 +64,7 @@ export function initInterviewFlow() {
     previousButton.disabled = currentStep === 0;
     const isLast = currentStep === visibleSteps.length - 1;
     autoAdvanceNote.textContent = isLast
-      ? "回答後、自動で審議を始めます"
+      ? "回答後、自動で告白をまとめます"
       : "回答を選ぶと自動で次へ進みます";
     progressBar.style.width = `${((currentStep + 1) / visibleSteps.length) * 100}%`;
     step.querySelector(
@@ -84,7 +87,7 @@ export function initInterviewFlow() {
     diagnosisForm.classList.add("is-reacting");
     previousButton.disabled = true;
     autoAdvanceNote.textContent = currentStep === visibleSteps.length - 1
-      ? "判決をまとめています…"
+      ? "告白をまとめています…"
       : "シスターが確認しています…";
     clearTimeout(advanceTimer);
     advanceTimer = setTimeout(() => {
@@ -96,7 +99,7 @@ export function initInterviewFlow() {
       } else {
         showQuestion(currentStep + 1);
       }
-    }, SISTER_REACTION_DISPLAY_MS);
+    }, SISTER_REACTION_ADVANCE_MS);
   }
 
   function goToPreviousQuestion() {
