@@ -89,6 +89,13 @@ img { display: block; max-width: 100%; }
 .hero-confess { cursor: pointer; transition: transform .25s ease, filter .25s ease; }
 .hero-confess:hover { transform: translateY(-7px) scale(1.015); filter: brightness(1.12); }
 .hero-confess:focus-visible { outline: 2px solid var(--gold); outline-offset: 8px; }
+.concept-copy {
+  position: absolute; z-index: 3; top: 18px; left: 50%; transform: translateX(-50%);
+  width: max-content; max-width: calc(100% - 32px); color: #d7cdda;
+  font: 700 clamp(12px,1.4vw,15px)/1.8 "Yu Mincho", "Hiragino Mincho ProN", serif;
+  letter-spacing: .04em; text-shadow: 0 2px 12px #0c0910;
+}
+.concept-copy span { display: inline; }
 .confessional-arch {
   position: absolute; width: 445px; height: 580px; border: 1px solid rgba(201,154,70,.22);
   border-radius: 50% 50% 6px 6px; z-index: -1;
@@ -924,6 +931,8 @@ footer { background: #1d1227; color: rgba(255,255,255,.72); padding: 35px 24px; 
   .hero h1 span, .hero h1 em { white-space: normal; }
   .counter { margin-top: 28px; }
   .hero-visual { min-height: 430px; }.hero-visual::before { width: 280px; height: 370px; }.hero-visual::after { width: 310px; height: 70px; }.hero-visual img { width: 330px; }
+  .concept-copy { top: 8px; width: calc(100% - 24px); font-size: 12px; line-height: 1.65; }
+  .concept-copy span { display: block; }
   .confessional-arch { width: 310px; height: 410px; }
   .character-cta { bottom: 4px; min-height: 74px; padding-left: 18px; }
   .click-hint { display: none; }
