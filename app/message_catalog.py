@@ -1,16 +1,7 @@
 from pathlib import Path
 
-RAMEN_TYPE_LABELS = {
-    "shoyu": "醤油",
-    "miso": "味噌",
-    "shio": "塩",
-    "tonkotsu": "豚骨",
-    "iekei": "家系",
-    "jiro": "二郎系",
-    "tsukemen": "つけ麺",
-    "other": "その他",
-}
-RAMEN_TYPES = tuple(RAMEN_TYPE_LABELS.values())
+from .choices import RAMEN_TYPE_LABELS, RAMEN_TYPES
+
 DATE_REASONS_PATH = Path(__file__).with_name("date_reasons.txt")
 
 ACHIEVEMENT_REASONS = {

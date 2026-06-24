@@ -23,99 +23,21 @@
     </div>
 
     <div class="question-stage">
-      <fieldset class="question-step is-active" data-question="meals" aria-label="今日すでに何食食べましたか？">
-        <p class="question-number">QUESTION 1 / 7</p>
-        <div class="interview-choices">
-          <label><input type="radio" name="meals" value="0"><span>まだ何も食べていない</span></label>
-          <label><input type="radio" name="meals" value="1"><span>1食だけ</span></label>
-          <label><input type="radio" name="meals" value="2"><span>2食食べた</span></label>
-          <label><input type="radio" name="meals" value="3"><span>3食食べた</span></label>
-          <label><input type="radio" name="meals" value="4"><span>4食以上 / 記憶があいまい</span></label>
+      {% for question in diagnosis_questions %}
+      <fieldset
+        class="question-step{% if loop.first %} is-active{% endif %}"
+        data-question="{{ question.name }}"
+        {% if question.conditional %}data-conditional{% endif %}
+        aria-label="{{ question.aria_label }}"
+      >
+        <p class="question-number">{{ question.number }}</p>
+        <div class="interview-choices{% if question.css_class %} {{ question.css_class }}{% endif %}">
+          {% for choice in question.choices %}
+          <label><input type="radio" name="{{ question.name }}" value="{{ choice.value }}"><span>{{ choice.label }}</span></label>
+          {% endfor %}
         </div>
       </fieldset>
-
-      <fieldset class="question-step" data-question="ramen_count_today" data-conditional aria-label="そのうちラーメンは何回でしたか？">
-        <p class="question-number">追加審議</p>
-        <div class="interview-choices">
-          <label><input type="radio" name="ramen_count_today" value="0"><span>まだ食べていない</span></label>
-          <label><input type="radio" name="ramen_count_today" value="1"><span>1回</span></label>
-          <label><input type="radio" name="ramen_count_today" value="2"><span>2回</span></label>
-          <label><input type="radio" name="ramen_count_today" value="3"><span>3回以上</span></label>
-        </div>
-      </fieldset>
-
-      <fieldset class="question-step" data-question="achievement" aria-label="今日なしとげたことは？">
-        <p class="question-number">QUESTION 2 / 7</p>
-        <div class="interview-choices choice-grid-wide">
-          <label><input type="radio" name="achievement" value="worked"><span>仕事・勉強をした</span></label>
-          <label><input type="radio" name="achievement" value="went_out"><span>外に出た</span></label>
-          <label><input type="radio" name="achievement" value="walked"><span>歩いた</span></label>
-          <label><input type="radio" name="achievement" value="housework"><span>家事をした</span></label>
-          <label><input type="radio" name="achievement" value="woke_early"><span>少し早く起きた</span></label>
-          <label><input type="radio" name="achievement" value="kindness"><span>人にやさしくした</span></label>
-          <label><input type="radio" name="achievement" value="oshi"><span>推しの配信を見守った</span></label>
-          <label><input type="radio" name="achievement" value="shorts"><span>ショート動画をずっと見た</span></label>
-          <label><input type="radio" name="achievement" value="nothing"><span>何もしていない</span></label>
-        </div>
-      </fieldset>
-
-      <fieldset class="question-step" data-question="mood" aria-label="今日の心の状態は？">
-        <p class="question-number">QUESTION 3 / 7</p>
-        <div class="interview-choices">
-          <label><input type="radio" name="mood" value="tired"><span>疲れている</span></label>
-          <label><input type="radio" name="mood" value="hungry"><span>腹が減っている</span></label>
-          <label><input type="radio" name="mood" value="angry"><span>むしゃくしゃしている</span></label>
-          <label><input type="radio" name="mood" value="lonely"><span>ちょっと寂しい</span></label>
-          <label><input type="radio" name="mood" value="proud"><span>達成感がある</span></label>
-          <label><input type="radio" name="mood" value="empty"><span>もう何も考えたくない</span></label>
-        </div>
-      </fieldset>
-
-      <fieldset class="question-step" data-question="after_plan" aria-label="今から何をする予定ですか？">
-        <p class="question-number">QUESTION 4 / 7</p>
-        <div class="interview-choices">
-          <label><input type="radio" name="after_plan" value="work_more"><span>まだ作業する</span></label>
-          <label><input type="radio" name="after_plan" value="sleep"><span>寝るだけ</span></label>
-          <label><input type="radio" name="after_plan" value="go_home"><span>帰るだけ</span></label>
-          <label><input type="radio" name="after_plan" value="meet_people"><span>人と会う</span></label>
-          <label><input type="radio" name="after_plan" value="nothing"><span>特に何もない</span></label>
-          <label><input type="radio" name="after_plan" value="more_shorts"><span>ショート動画を見る</span></label>
-        </div>
-      </fieldset>
-
-      <fieldset class="question-step" data-question="reason_not_to_eat" aria-label="ラーメンを食べない理由はありますか？">
-        <p class="question-number">QUESTION 5 / 7</p>
-        <div class="interview-choices">
-          <label><input type="radio" name="reason_not_to_eat" value="none"><span>ない</span></label>
-          <label><input type="radio" name="reason_not_to_eat" value="yes"><span>ある</span></label>
-          <label><input type="radio" name="reason_not_to_eat" value="ignore"><span>ある気がするが、見ないことにした</span></label>
-        </div>
-      </fieldset>
-
-      <fieldset class="question-step" data-question="ramen_type" aria-label="食べたいラーメンの系統は？">
-        <p class="question-number">QUESTION 6 / 7</p>
-        <div class="interview-choices ramen-choice-grid">
-          <label><input type="radio" name="ramen_type" value="shoyu"><span>醤油</span></label>
-          <label><input type="radio" name="ramen_type" value="miso"><span>味噌</span></label>
-          <label><input type="radio" name="ramen_type" value="shio"><span>塩</span></label>
-          <label><input type="radio" name="ramen_type" value="tonkotsu"><span>豚骨</span></label>
-          <label><input type="radio" name="ramen_type" value="iekei"><span>家系</span></label>
-          <label><input type="radio" name="ramen_type" value="jiro"><span>二郎系</span></label>
-          <label><input type="radio" name="ramen_type" value="tsukemen"><span>つけ麺</span></label>
-          <label><input type="radio" name="ramen_type" value="other"><span>その他・おすすめしてほしい</span></label>
-        </div>
-      </fieldset>
-
-      <fieldset class="question-step" data-question="forgiveness_style" aria-label="どんなふうに赦されたいですか？">
-        <p class="question-number">QUESTION 7 / 7</p>
-        <div class="interview-choices">
-          <label><input type="radio" name="forgiveness_style" value="praise"><span>褒めてほしい</span></label>
-          <label><input type="radio" name="forgiveness_style" value="spoil"><span>甘やかしてほしい</span></label>
-          <label><input type="radio" name="forgiveness_style" value="strict"><span>厳しくてもいい</span></label>
-          <label><input type="radio" name="forgiveness_style" value="push"><span>雑に背中を押してほしい</span></label>
-          <label><input type="radio" name="forgiveness_style" value="oracle"><span>神のお告げっぽく</span></label>
-        </div>
-      </fieldset>
+      {% endfor %}
     </div>
 
     <div class="interview-controls">
@@ -129,4 +51,5 @@
     </div>
   </form>
 </section>
+<script id="diagnosis-question-config" type="application/json">{{ question_messages | tojson }}</script>
 {% endblock %}

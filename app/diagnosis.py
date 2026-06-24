@@ -4,7 +4,8 @@ The re-exports keep the existing ``app.diagnosis`` API stable while the
 implementation lives in modules grouped by responsibility.
 """
 
-from .message_catalog import DATE_REASONS, RAMEN_TYPE_LABELS, RAMEN_TYPES
+from .choices import RAMEN_TYPE_LABELS, RAMEN_TYPES
+from .message_catalog import DATE_REASONS
 from .models import DiagnosisInput, DiagnosisResult
 from .result_generator import _date_context, generate_result_text, select_sister_image
 from .scoring import calculate_scores, determine_result_type, is_hidden_sleep_result
