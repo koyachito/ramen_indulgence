@@ -2,7 +2,10 @@ import { $, $$ } from "./dom.js";
 import { updateClock } from "./clock.js";
 import { loadQuestionMessages } from "./question_messages.js";
 
-const SISTER_REACTION_DISPLAY_MS = 2300;
+const SISTER_REACTION_TOTAL_MS = 2300;
+const QUESTION_ENTER_ANIMATION_MS = 450;
+const SISTER_REACTION_ADVANCE_MS =
+  SISTER_REACTION_TOTAL_MS - QUESTION_ENTER_ANIMATION_MS;
 
 export function initInterviewFlow() {
   const diagnosisForm = $("#diagnosis-form");
@@ -96,7 +99,7 @@ export function initInterviewFlow() {
       } else {
         showQuestion(currentStep + 1);
       }
-    }, SISTER_REACTION_DISPLAY_MS);
+    }, SISTER_REACTION_ADVANCE_MS);
   }
 
   function goToPreviousQuestion() {
