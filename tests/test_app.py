@@ -140,16 +140,15 @@ def test_posting_diagnosis_returns_new_result_structure():
     assert 'class="about-nav-link" href="/about"' in response.text
 
 
-def test_mobile_navigation_prioritizes_about_link():
+def test_mobile_navigation_keeps_all_available_links_visible():
     stylesheet = Path("app/static/style.css").read_text(encoding="utf-8")
-    mobile_rules = stylesheet.split("@media (max-width: 850px)", 1)[1].split(
-        "@media (max-width: 600px)", 1
-    )[0]
 
-    assert ".stats-nav-link { display: none; }" in mobile_rules
-    assert "about-nav-link" not in mobile_rules
+    assert ".stats-nav-link { display: none; }" not in stylesheet
+    assert ".about-nav-link { display: none; }" not in stylesheet
     assert "a:last-child" not in stylesheet
     assert "a:nth-child(2)" not in stylesheet
+    assert ".site-header { flex-wrap: wrap; }" in stylesheet
+    assert ".site-nav { width: 100%; justify-content: flex-end; }" in stylesheet
 
 
 def test_reroll_does_not_increment_total():

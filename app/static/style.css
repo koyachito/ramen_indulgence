@@ -889,7 +889,6 @@ footer { background: #1d1227; color: rgba(255,255,255,.72); padding: 35px 24px; 
 
 @media (max-width: 850px) {
   .site-nav { flex: 0 0 auto; gap: 14px; }
-  .stats-nav-link { display: none; }
   .hero { padding-top: 55px; text-align: center; }
   .hero-actions { justify-content: center; }.hero-visual { min-height: 510px; }
   .hero-visual::before { width: 340px; height: 450px; }.hero-visual::after { width: 390px; height: 90px; }.hero-visual img { width: 410px; }
@@ -984,8 +983,9 @@ footer { background: #1d1227; color: rgba(255,255,255,.72); padding: 35px 24px; 
   .share-tools { grid-template-columns: 1fr; }
 }
 
-@media (max-width: 400px) {
-  .brand > span:last-child { display: none; }
+@media (max-width: 360px) {
+  .site-header { flex-wrap: wrap; }
+  .site-nav { width: 100%; justify-content: flex-end; }
 }
 
 @media (prefers-reduced-motion: reduce) {
