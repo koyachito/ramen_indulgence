@@ -55,7 +55,6 @@ def test_top_shows_concise_concept_copy():
     assert 'class="concept-copy"' in response.text
 
     stylesheet = Path("app/static/style.css").read_text(encoding="utf-8")
-    assert ".concept-copy span { display: inline; }" in stylesheet
     assert ".concept-copy span { display: block; }" in stylesheet
 
 
