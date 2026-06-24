@@ -2,6 +2,8 @@ import { $, $$ } from "./dom.js";
 import { updateClock } from "./clock.js";
 import { loadQuestionMessages } from "./question_messages.js";
 
+const SISTER_REACTION_DISPLAY_MS = 3000;
+
 export function initInterviewFlow() {
   const diagnosisForm = $("#diagnosis-form");
   if (!diagnosisForm) return;
@@ -94,7 +96,7 @@ export function initInterviewFlow() {
       } else {
         showQuestion(currentStep + 1);
       }
-    }, 1250);
+    }, SISTER_REACTION_DISPLAY_MS);
   }
 
   function goToPreviousQuestion() {
