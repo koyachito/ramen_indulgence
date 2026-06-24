@@ -91,7 +91,7 @@ def test_top_and_diagnosis_show_about_and_hide_stats_navigation():
     assert 'from "./js/interview_flow.js"' in entrypoint
     assert 'input.addEventListener("click"' in interview_flow
     assert "JSON.parse(questionConfig.textContent)" in question_messages
-    assert "const SISTER_REACTION_DISPLAY_MS = 3000;" in interview_flow
+    assert "const SISTER_REACTION_DISPLAY_MS = 2300;" in interview_flow
     assert "}, SISTER_REACTION_DISPLAY_MS);" in interview_flow
     assert "}, 1250);" not in interview_flow
     assert "const QUESTION_MESSAGES = {" not in entrypoint
