@@ -11,6 +11,12 @@ from .choices import DIAGNOSIS_QUESTIONS, QUESTION_MESSAGES, VALID_CHOICE_VALUES
 from .database import get_stats, init_db, record_judgment, record_result
 from .diagnosis import RAMEN_TYPES, diagnose, maps_url, share_text, x_share_url
 from .models import DiagnosisInput
+from .rate_limit import (
+    HIDDEN_RECORD_COOKIE,
+    RESULT_RECORD_COOKIE,
+    can_record,
+    mark_recorded,
+)
 
 PUBLIC_APP_URL = os.getenv(
     "APP_PUBLIC_URL", "https://ramen-indulgence.onrender.com/"
@@ -97,7 +103,8 @@ async def result(
     )
     judgment = diagnose(data)
 
-    if not reroll:
+    should_record = not reroll and can_record(request, RESULT_RECORD_COOKIE)
+    if should_record:
         record_result(data, judgment)
     stats = get_stats()
     post_text = share_text(judgment, PUBLIC_APP_URL)
@@ -114,6 +121,8 @@ async def result(
             "show_stats": True,
         },
     )
+    if should_record:
+        mark_recorded(response, request, RESULT_RECORD_COOKIE)
     return response
 
 
@@ -138,7 +147,9 @@ async def hidden_confession(request: Request):
 
 @app.post("/hidden-judgment", response_class=HTMLResponse)
 async def hidden_judgment(request: Request):
-    record_judgment("banzai")
+    should_record = can_record(request, HIDDEN_RECORD_COOKIE)
+    if should_record:
+        record_judgment("banzai")
     post_text = (
         "ラーメン免罪符の奥で、特別な祝福を授かりました。\n\n"
         "祝福結果：ラーメンばんざい！\n\n"
@@ -147,7 +158,7 @@ async def hidden_judgment(request: Request):
         f"{PUBLIC_APP_URL}\n"
         "#ラーメン免罪符"
     )
-    return templates.TemplateResponse(
+    response = templates.TemplateResponse(
         request=request,
         name="hidden_result.html",
         context={
@@ -156,6 +167,9 @@ async def hidden_judgment(request: Request):
             "total": get_stats()["total"],
         },
     )
+    if should_record:
+        mark_recorded(response, request, HIDDEN_RECORD_COOKIE)
+    return response
 
 
 @app.get("/stats", response_class=HTMLResponse)
