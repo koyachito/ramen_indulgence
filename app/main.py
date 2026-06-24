@@ -125,7 +125,7 @@ async def result_get_redirect():
 @app.get("/about", response_class=HTMLResponse)
 async def about(request: Request):
     return templates.TemplateResponse(
-        request=request, name="about.html", context={"show_stats": True}
+        request=request, name="about.html", context={"show_stats": False}
     )
 
 

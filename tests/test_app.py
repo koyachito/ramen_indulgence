@@ -141,7 +141,37 @@ def test_stamp_assets_are_used_by_result_pages_and_canvas():
     canvas = Path("app/static/js/certificate_canvas.js").read_text(encoding="utf-8")
     assert "certificate.dataset.sealImage" in canvas
     assert "context.drawImage(sealImage" in canvas
+    assert canvas.count("context.drawImage(sealImage, 900, 48, 230, 230);") == 2
     assert "drawCanvasSeal" not in canvas
+
+
+def test_standard_result_card_uses_dark_background():
+    stylesheet = Path("app/static/style.css").read_text(encoding="utf-8")
+    base_template = Path("app/templates/base.html").read_text(encoding="utf-8")
+    canvas = Path("app/static/js/certificate_canvas.js").read_text(encoding="utf-8")
+
+    assert ".result-card {" in stylesheet
+    assert "color: #eee8dd;" in stylesheet
+    assert "background: transparent !important;" in stylesheet
+    assert "box-shadow: none;" in stylesheet
+    assert "linear-gradient(145deg, #110b15, #1a0f20 48%, #0c0910) !important;" in stylesheet
+    assert "?v=15-dark-results-3" in base_template
+    assert 'context.fillStyle = "#110b15";' in canvas
+    assert 'context.fillStyle = "#f7f0df";' not in canvas
+    assert 'context.strokeStyle = "#a94855";' in canvas
+    assert 'context.strokeStyle = "rgba(169,72,85,.45)";' in canvas
+
+
+def test_ramen_count_copy_avoids_criminal_language():
+    choices_source = Path("app/choices.py").read_text(encoding="utf-8")
+    generator_source = Path("app/result_generator.py").read_text(encoding="utf-8")
+
+    assert "本日一杯目につき、情状酌量の余地があります。" in choices_source
+    assert "本日二杯目ですが、まだ情状酌量の余地はあります。" in choices_source
+    assert "初犯" not in choices_source
+    assert "再犯" not in choices_source
+    assert "初犯" not in generator_source
+    assert 'Choice(1, "1回", "thinking.png"' in choices_source
 
 
 def test_clock_uses_japan_time_for_diagnosis_and_stats():
@@ -215,6 +245,7 @@ def test_about_shows_creator_and_github_repository_link():
     response = asyncio.run(request("GET", "/about"))
 
     assert response.status_code == 200
+    assert 'href="/stats"' not in response.text
     assert "このアプリは <b>koyachito</b> が制作しました。" in response.text
     assert "GitHub: koyachito/ramen_indulgence" in response.text
     assert (

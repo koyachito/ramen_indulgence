@@ -61,7 +61,7 @@ export async function createCertificateImage() {
     context.textAlign = "center";
     context.font = `900 ${isBanzai ? 88 : 112}px "Yu Mincho", serif`;
     context.fillText(isBanzai ? "ラーメンばんざい！" : "今日は寝ろ", 600, 790);
-    context.drawImage(sealImage, 835, 485, 250, 250);
+    context.drawImage(sealImage, 900, 48, 230, 230);
     context.fillStyle = "#c4b8c7";
     context.font = '600 24px "Yu Gothic", sans-serif';
     context.fillText("ラーメン免罪符　#ラーメン免罪符", 600, 1090);
@@ -82,34 +82,35 @@ export async function createCertificateImage() {
   const ramen = $$(".result-meta b", certificate)[0].textContent.trim();
   const issuedAt = $$(".result-meta b", certificate)[1].textContent.trim();
 
-  context.fillStyle = "#f7f0df";
+  context.fillStyle = "#110b15";
   context.fillRect(0, 0, 1200, 1200);
-  context.strokeStyle = "#4a2459";
+  context.strokeStyle = "#a94855";
   context.lineWidth = 5;
   context.strokeRect(30, 30, 1140, 1140);
+  context.strokeStyle = "rgba(169,72,85,.45)";
   context.lineWidth = 1;
   context.strokeRect(48, 48, 1104, 1104);
   context.textAlign = "center";
   context.fillStyle = "#9f273a";
   context.font = '900 34px "Yu Gothic", sans-serif';
   context.fillText(verdict, 600, 96);
-  context.fillStyle = "#311654";
+  context.fillStyle = "#e8d8ee";
   context.font = '700 64px "Yu Mincho", serif';
   context.fillText(title, 600, 165);
   context.drawImage(image, 420, 175, 360, 360);
 
   context.textAlign = "left";
-  context.fillStyle = "#20152c";
+  context.fillStyle = "#eee8dd";
   context.font = '600 25px "Yu Mincho", serif';
   const lines = wrapCanvasText(context, text, 980);
   let y = 560;
   lines.forEach((line) => {
     if (line === "ラーメン。") {
-      context.fillStyle = "#311654";
+      context.fillStyle = "#e8d8ee";
       context.font = '700 37px "Yu Mincho", serif';
       context.fillText(line, 110, y + 8);
       context.font = '600 25px "Yu Mincho", serif';
-      context.fillStyle = "#20152c";
+      context.fillStyle = "#eee8dd";
       y += 52;
     } else {
       context.fillText(line, 110, y);
@@ -118,7 +119,7 @@ export async function createCertificateImage() {
   });
 
   const boxY = Math.max(y + 18, 825);
-  context.fillStyle = "#311654";
+  context.fillStyle = "#4a2459";
   context.fillRect(75, boxY, 1050, 112);
   context.fillStyle = "#ffffff";
   context.font = '700 22px "Yu Gothic", sans-serif';
@@ -127,7 +128,7 @@ export async function createCertificateImage() {
     .forEach((line, index) => {
       context.fillText(line, 120, boxY + 45 + index * 32);
     });
-  context.fillStyle = "#665b68";
+  context.fillStyle = "#aaa0ad";
   context.font = '600 19px "Yu Gothic", sans-serif';
   context.fillText(`発行対象：${ramen}`, 90, 1065);
   context.fillText(`発行日時：${issuedAt}`, 90, 1103);
