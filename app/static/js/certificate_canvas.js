@@ -91,13 +91,14 @@ export async function createCertificateImage() {
   context.lineWidth = 1;
   context.strokeRect(48, 48, 1104, 1104);
   context.textAlign = "center";
+  context.drawImage(image, 420, 70, 360, 360);
+  context.drawImage(sealImage, 730, 75, 180, 180);
   context.fillStyle = "#9f273a";
   context.font = '900 34px "Yu Gothic", sans-serif';
-  context.fillText(verdict, 600, 96);
+  context.fillText(verdict, 600, 455);
   context.fillStyle = "#e8d8ee";
   context.font = '700 64px "Yu Mincho", serif';
-  context.fillText(title, 600, 165);
-  context.drawImage(image, 420, 175, 360, 360);
+  context.fillText(title, 600, 525);
 
   context.textAlign = "left";
   context.fillStyle = "#eee8dd";
@@ -132,7 +133,6 @@ export async function createCertificateImage() {
   context.font = '600 19px "Yu Gothic", sans-serif';
   context.fillText(`発行対象：${ramen}`, 90, 1065);
   context.fillText(`発行日時：${issuedAt}`, 90, 1103);
-  context.drawImage(sealImage, 920, 940, 180, 180);
   context.textAlign = "right";
   context.fillText("#ラーメン免罪符", 1110, 1130);
 

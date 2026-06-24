@@ -161,10 +161,10 @@ async def hidden_judgment(request: Request):
 @app.get("/stats", response_class=HTMLResponse)
 async def stats(request: Request, hour: int | None = Query(None, ge=0, le=23)):
     labels = {
-        "forgiven": "赦し",
-        "worry": "慎重な赦し",
-        "angry": "反省付きの赦し",
-        "ogre": "深い告白",
+        "forgiven": "完全なる赦し",
+        "worry": "見守りの赦し",
+        "angry": "反省を促す赦し",
+        "ogre": "やむなき慈悲の赦し",
         "sleep": "今日は寝ろ（幻の助言）",
         "banzai": "ラーメンばんざい！（どこかに隠された祝福）",
     }

@@ -109,10 +109,10 @@ def generate_result_text(
         full_text = "今日は寝ろ"
     else:
         metadata = {
-            "forgiven": ("赦し", "麺欲赦免", "success"),
-            "worry": ("慎重な赦し", "かなり慎重な赦し", "warning"),
-            "angry": ("反省付きの赦し", "深い反省付きの赦し", "danger"),
-            "ogre": ("鬼反省付きの赦し", "深い赦し", "danger"),
+            "forgiven": ("完全なる赦し", "ささやかな懺悔", "success"),
+            "worry": ("見守りの赦し", "素直な懺悔", "warning"),
+            "angry": ("反省を促す赦し", "深い懺悔", "danger"),
+            "ogre": ("やむなき慈悲の赦し", "魂の懺悔", "danger"),
         }
         title, verdict, tone = metadata[result_type]
         conclusion = f"{ramen_label}ラーメンへの欲は赦されました。ラーメン。"

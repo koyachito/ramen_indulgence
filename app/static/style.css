@@ -659,7 +659,7 @@ input[type="range"] { width: 100%; accent-color: var(--purple-2); cursor: pointe
   box-shadow: none;
 }
 .result-card h1 {
-  margin: 8px 0 5px;
+  margin: 4px 0 22px;
   color: #e8d8ee;
   font: 700 clamp(42px,7vw,72px) "Yu Mincho", serif;
 }
@@ -670,7 +670,7 @@ input[type="range"] { width: 100%; accent-color: var(--purple-2); cursor: pointe
 .result-sister {
   width: min(320px, 72vw);
   height: 300px;
-  margin: 0 auto -5px;
+  margin: 0 auto -12px;
   object-fit: contain;
   filter: drop-shadow(0 15px 18px rgba(0,0,0,.45));
 }
@@ -756,17 +756,14 @@ input[type="range"] { width: 100%; accent-color: var(--purple-2); cursor: pointe
   grid-template-columns: auto 1fr;
   gap: 8px 16px;
   margin-top: 22px;
-  min-height: 124px;
-  padding-right: 145px;
   text-align: left;
   font-size: 11px;
 }
 .result-meta span { color: #aaa0ad; }
 .result-seal {
   position: absolute;
-  right: 28px;
-  top: auto;
-  bottom: 26px;
+  right: calc(50% - 265px);
+  top: 34px;
   width: 124px;
   height: 124px;
   object-fit: contain;
@@ -1014,10 +1011,10 @@ footer { background: #1d1227; color: rgba(255,255,255,.72); padding: 35px 24px; 
   .result-sister { height: 230px; }
   .result-copy { padding: 24px 10px; }
   .result-text { line-height: 1.85; }
-  .result-meta { grid-template-columns: 1fr; min-height: 96px; padding-right: 105px; }
+  .result-meta { grid-template-columns: 1fr; }
   .result-meta span { margin-top: 7px; }
   .verdict-label { margin-bottom: 12px; font-size: 16px; letter-spacing: .12em; }
-  .result-card > .result-seal { right: 8px; top: auto; bottom: 20px; width: 92px; height: 92px; }
+  .result-card > .result-seal { right: calc(50% - 155px); top: 30px; width: 92px; height: 92px; }
   .sleep-only-result { min-height: 480px; }
   .sleep-only-result .sleep-seal { right: 10px; top: 38px; width: 92px; height: 92px; }
   .banzai-result { min-height: 480px; }

@@ -144,7 +144,7 @@ def test_stamp_assets_are_used_by_result_pages_and_canvas():
     assert "certificate.dataset.sealImage" in canvas
     assert "context.drawImage(sealImage" in canvas
     assert "context.drawImage(sealImage, 900, 48, 230, 230);" in canvas
-    assert "context.drawImage(sealImage, 920, 940, 180, 180);" in canvas
+    assert "context.drawImage(sealImage, 730, 75, 180, 180);" in canvas
     assert "drawCanvasSeal" not in canvas
 
 
@@ -158,7 +158,7 @@ def test_standard_result_card_uses_dark_background():
     assert "background: transparent !important;" in stylesheet
     assert "box-shadow: none;" in stylesheet
     assert "linear-gradient(145deg, #110b15, #1a0f20 48%, #0c0910) !important;" in stylesheet
-    assert "?v=16-confession-copy" in base_template
+    assert "?v=16-result-copy-position" in base_template
     assert 'context.fillStyle = "#110b15";' in canvas
     assert 'context.fillStyle = "#f7f0df";' not in canvas
     assert 'context.strokeStyle = "#a94855";' in canvas
@@ -294,9 +294,9 @@ def test_diagnosis_flow_never_returns_hidden_sleep_judgment():
             return first, second, third, client.cookies
 
     first, second, third, cookies = asyncio.run(scenario())
-    assert "鬼反省付きの赦し" in first.text
-    assert "鬼反省付きの赦し" in second.text
-    assert "鬼反省付きの赦し" in third.text
+    assert "やむなき慈悲の赦し" in first.text
+    assert "やむなき慈悲の赦し" in second.text
+    assert "やむなき慈悲の赦し" in third.text
     assert "今日は寝ろ" not in third.text
     assert "oni_count" not in cookies
     assert "sleep_until" not in cookies
@@ -344,6 +344,10 @@ def test_hidden_command_records_banzai_judgment_with_share_actions():
 def test_stats_list_sleep_and_hidden_banzai_separately():
     stats = asyncio.run(request("GET", "/stats"))
     assert stats.status_code == 200
+    assert "完全なる赦し" in stats.text
+    assert "見守りの赦し" in stats.text
+    assert "反省を促す赦し" in stats.text
+    assert "やむなき慈悲の赦し" in stats.text
     assert "今日は寝ろ（幻の助言）" in stats.text
     assert "ラーメンばんざい！（どこかに隠された祝福）" in stats.text
 
@@ -365,10 +369,12 @@ def test_copy_matches_mongonshusei_csv():
 def test_result_stamp_does_not_overlap_result_heading():
     stylesheet = Path("app/static/style.css").read_text(encoding="utf-8")
     canvas = Path("app/static/js/certificate_canvas.js").read_text(encoding="utf-8")
+    template = Path("app/templates/result.html").read_text(encoding="utf-8")
 
-    assert "min-height: 124px;" in stylesheet
-    assert "padding-right: 145px;" in stylesheet
-    assert "bottom: 26px;" in stylesheet
-    assert "min-height: 96px; padding-right: 105px;" in stylesheet
-    assert "bottom: 20px; width: 92px; height: 92px;" in stylesheet
-    assert "context.drawImage(sealImage, 920, 940, 180, 180);" in canvas
+    assert "right: calc(50% - 265px);" in stylesheet
+    assert "top: 34px;" in stylesheet
+    assert "right: calc(50% - 155px); top: 30px;" in stylesheet
+    assert "context.drawImage(sealImage, 730, 75, 180, 180);" in canvas
+    standard_result = template[template.index('{% else %}'):]
+    assert standard_result.index('class="result-sister"') < standard_result.index('class="verdict-label"')
+    assert standard_result.index('class="verdict-label"') < standard_result.index("<h1")

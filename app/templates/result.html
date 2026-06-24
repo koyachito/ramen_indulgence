@@ -38,9 +38,9 @@
     data-download-image="{{ url_for('static', path='images/' + result.image) }}"
     data-seal-image="{{ url_for('static', path='images/menyoku.png') }}"
   >
+    <img class="result-sister" src="{{ url_for('static', path='images/' + result.image) }}" alt="赦しを伝えるシスター">
     <p class="verdict-label">{{ result.verdict }}</p>
     <h1 class="{% if result.result_type == 'sleep' %}sleep-title{% endif %}">{{ result.title }}</h1>
-    <img class="result-sister" src="{{ url_for('static', path='images/' + result.image) }}" alt="赦しを伝えるシスター">
     <div class="result-copy">
       <p class="result-text">{{ result.full_text }}</p>
       <div class="result-primary-actions">
