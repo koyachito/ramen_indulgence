@@ -10,18 +10,23 @@ GitHub Issue に着手するときは、次の手順を守る。
    - 変更の扱いが不明な場合はユーザーに確認する。
 3. 前の Issue のブランチから `main` に移動する。
    - `git switch main`
-4. GitHub の最新版を取り込む。
+4. 前の Issue が `main` にマージ済みであることを確認し、前の Issue のブランチをローカルと GitHub から削除する。
+   - マージ確認: `git merge-base --is-ancestor <前のブランチ名> main`
+   - ローカル削除: `git branch -d <前のブランチ名>`
+   - GitHub 削除: `git push origin --delete <前のブランチ名>`
+   - マージされていないブランチを強制削除しない。
+5. GitHub の最新版を取り込む。
    - `git pull --ff-only origin main`
-5. Issue 専用の新しいブランチを作成して移動する。
+6. Issue 専用の新しいブランチを作成して移動する。
    - ブランチ名は `issue-<番号>-<短い説明>` とする。
    - 例: `git switch -c issue-10-mobile-about-link`
-6. Issue の要件を確認し、必要な変更だけを実装する。
-7. Issue の完了条件に対応するテストと動作確認を行う。
-8. 差分を確認し、Issue に関係するファイルだけを commit する。
-9. 作業ブランチを GitHub に push する。
+7. Issue の要件を確認し、必要な変更だけを実装する。
+8. Issue の完了条件に対応するテストと動作確認を行う。
+9. 差分を確認し、Issue に関係するファイルだけを commit する。
+10. 作業ブランチを GitHub に push する。
    - 初回: `git push -u origin <ブランチ名>`
    - 以降: `git push`
-10. 実装内容、確認結果、push 先のブランチをユーザーへ報告する。
+11. 実装内容、確認結果、push 先のブランチをユーザーへ報告する。
 
 ## Git 操作上の注意
 
