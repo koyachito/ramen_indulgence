@@ -27,6 +27,8 @@ GitHub Issue に着手するときは、次の手順を守る。
    - 初回: `git push -u origin <ブランチ名>`
    - 以降: `git push`
 11. 実装内容、確認結果、push 先のブランチをユーザーへ報告する。
+   - GitHub へ push した場合は、必ず Pull Request 作成用 URL も報告する。
+   - URL 形式: `https://github.com/<owner>/<repository>/pull/new/<ブランチ名>`
 
 ## Git 操作上の注意
 
