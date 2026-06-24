@@ -46,12 +46,14 @@ def test_health_endpoint():
     assert response.json()["status"] == "ok"
 
 
-def test_top_and_diagnosis_hide_stats_navigation():
+def test_top_and_diagnosis_show_about_and_hide_stats_navigation():
     top = asyncio.run(request("GET", "/"))
     diagnosis = asyncio.run(request("GET", "/diagnosis"))
     assert top.status_code == diagnosis.status_code == 200
     assert 'href="/stats"' not in top.text
     assert 'href="/stats"' not in diagnosis.text
+    assert 'class="about-nav-link" href="/about"' in top.text
+    assert 'class="about-nav-link" href="/about"' in diagnosis.text
     assert "QUESTION 1 / 7" in diagnosis.text
     assert "QUESTION 7 / 7" in diagnosis.text
     assert "ramen_count_today" in diagnosis.text
@@ -135,6 +137,18 @@ def test_posting_diagnosis_returns_new_result_structure():
     assert "麺欲<br>赦免" in response.text
     assert "images/eating.png" in response.text
     assert 'href="/stats"' in response.text
+    assert 'class="about-nav-link" href="/about"' in response.text
+
+
+def test_mobile_navigation_keeps_all_available_links_visible():
+    stylesheet = Path("app/static/style.css").read_text(encoding="utf-8")
+
+    assert ".stats-nav-link { display: none; }" not in stylesheet
+    assert ".about-nav-link { display: none; }" not in stylesheet
+    assert "a:last-child" not in stylesheet
+    assert "a:nth-child(2)" not in stylesheet
+    assert ".site-header { flex-wrap: wrap; }" in stylesheet
+    assert ".site-nav { width: 100%; justify-content: flex-end; }" in stylesheet
 
 
 def test_reroll_does_not_increment_total():
