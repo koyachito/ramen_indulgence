@@ -7,7 +7,7 @@ os.environ["RAMEN_DB_PATH"] = "/tmp/ramen-menzaifu-test.db"
 
 import httpx
 
-from app.database import init_db
+from app.database import get_stats, init_db
 from app.main import app
 
 
@@ -75,10 +75,19 @@ def test_posting_diagnosis_returns_new_result_structure():
 
 
 def test_reroll_does_not_increment_total():
-    first = asyncio.run(request("POST", "/result", data=VALID_DATA))
+    init_db()
+    total_before_diagnosis = get_stats()["total"]
+
+    diagnosis = asyncio.run(request("POST", "/result", data=VALID_DATA))
+    total_after_diagnosis = get_stats()["total"]
+
     reroll_data = {**VALID_DATA, "reroll": "true"}
-    second = asyncio.run(request("POST", "/result", data=reroll_data))
-    assert first.status_code == second.status_code == 200
+    reroll = asyncio.run(request("POST", "/result", data=reroll_data))
+    total_after_reroll = get_stats()["total"]
+
+    assert diagnosis.status_code == reroll.status_code == 200
+    assert total_after_diagnosis == total_before_diagnosis + 1
+    assert total_after_reroll == total_after_diagnosis
 
 
 def test_diagnosis_flow_never_returns_hidden_sleep_judgment():
