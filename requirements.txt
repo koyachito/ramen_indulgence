@@ -3,4 +3,4 @@ uvicorn[standard]==0.34.3
 jinja2==3.1.6
 python-multipart==0.0.20
 anyio==4.8.0
-psycopg[binary]==3.2.9
+psycopg[binary]==3.3.4
