@@ -20,7 +20,7 @@ module.exports = defineConfig({
     },
   ],
   webServer: {
-    command: "python -m uvicorn app.main:app --host 0.0.0.0 --port 8000",
+    command: ".venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000",
     url: "http://localhost:8000/health",
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,
