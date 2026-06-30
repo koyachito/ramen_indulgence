@@ -4,7 +4,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 CSP = (
     "default-src 'self'; "
     "script-src 'self'; "
-    "style-src 'self' 'unsafe-inline'; "
+    "style-src 'self'; "
     "img-src 'self' data:; "
     "connect-src 'self'; "
     "object-src 'none'; "
@@ -18,6 +18,7 @@ SECURITY_HEADERS = {
     "X-Frame-Options": "DENY",
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Permissions-Policy": "geolocation=(), camera=(), microphone=()",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
     "Content-Security-Policy": CSP,
 }
 

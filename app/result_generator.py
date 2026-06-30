@@ -12,7 +12,6 @@ from .message_catalog import (
     REASON_NOT_TO_EAT_REASONS,
 )
 from .models import DiagnosisInput, DiagnosisResult, DiagnosisScores
-from .scoring import determine_result_type
 
 
 def select_sister_image(scores: DiagnosisScores, result_type: str) -> str:
@@ -95,11 +94,10 @@ def _ramen_selection(data: DiagnosisInput, scores: DiagnosisScores, rng=random) 
 def generate_result_text(
     data: DiagnosisInput,
     scores: DiagnosisScores,
-    result_type: str | None = None,
+    result_type: str,
     rng: random.Random | None = None,
 ) -> DiagnosisResult:
     rng = rng or random
-    result_type = result_type or determine_result_type(scores)
     ramen_label, ramen_aruaru = _ramen_selection(data, scores, rng)
     reasons = _natural_reasons(data, scores, rng)
 

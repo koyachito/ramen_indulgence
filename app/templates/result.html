@@ -73,6 +73,7 @@
 
   <div class="result-actions reveal">
     <form action="/result" method="post" class="reroll-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <input type="hidden" name="current_hour" value="{{ form_data.current_hour }}">
       <input type="hidden" name="current_month" value="{{ form_data.current_month }}">
       <input type="hidden" name="current_day" value="{{ form_data.current_day }}">

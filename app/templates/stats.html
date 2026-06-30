@@ -13,7 +13,7 @@
       <div class="stat-list">
         {% for key, label in labels.items() %}
         {% set count = stats.results.get(key, 0) %}
-        <div><span>{{ label }}</span><b>{{ count }} 件</b><i style="--width: {{ (count / stats.total * 100) if stats.total else 0 }}%"></i></div>
+        <div><span>{{ label }}</span><b>{{ count }} 件</b><i data-width="{{ (count / stats.total * 100) if stats.total else 0 }}"></i></div>
         {% endfor %}
       </div>
     </section>
@@ -25,7 +25,7 @@
       <div class="stat-list ramen-stats">
         {% for ramen in ramen_types %}
         {% set count = stats.ramen.get(ramen, 0) %}
-        <div><span>{{ ramen }}</span><b>{{ count }} 件</b><i style="--width: {{ (count / stats.ramen_total * 100) if stats.ramen_total else 0 }}%"></i></div>
+        <div><span>{{ ramen }}</span><b>{{ count }} 件</b><i data-width="{{ (count / stats.ramen_total * 100) if stats.ramen_total else 0 }}"></i></div>
         {% endfor %}
       </div>
       {% if not stats.ramen_total %}
