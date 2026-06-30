@@ -124,6 +124,14 @@ bash start.sh
 pytest
 ```
 
+Playwright E2Eテストはブラウザが必要です（初回のみ）:
+
+```bash
+npm install
+npx playwright install chromium
+npx playwright test
+```
+
 ## Docker
 
 ```bash
@@ -194,20 +202,26 @@ python scripts/verify_sqlite_backup.py backups/ramen-YYYYMMDD-HHMMSS.db
 - Persistent Disk利用中は単一インスタンスに限定され、デプロイ時に数秒の停止が発生します。
 - PostgreSQL接続コードはありますが、複数インスタンス化や高度なDB運用が必要になるまで移行しません。
 - 統計画面の時間帯判定は、現在サーバーまたは閲覧環境の時刻に依存し、日本時間へ固定されていません。
-- 自動テストはPython処理と生成HTMLの確認が中心で、実ブラウザを使ったE2Eテストや複数スマートフォン実機での継続検証は未導入です。
 - 免罪符画像はブラウザのCanvasで生成するため、フォントや描画結果に端末差が出る場合があります。
 - XのWeb Intentではローカル生成画像を自動添付できないため、画像保存と投稿操作を分けています。
 - 無料ホスティングでは、スリープ後の初回アクセスに30〜60秒程度かかる場合があります。
+- 自動バックアップは未導入で、現在は手動またはRender Shellでの実行のみです。
 
 ## Future work
 
 - 複数インスタンス化やDB負荷増加が必要になった段階でPostgreSQLへ移行する
 - 統計の時間帯判定を日本時間基準に統一する
-- Playwrightなどによる診断完走・画像保存のブラウザE2Eテストを追加する
 - スマートフォン実機でナビゲーション、診断フロー、結果画面を継続確認する
 - 結果画面と免罪符画像のデザイン、アクセシビリティを改善する
 - 離脱した質問、画像保存率、再診断率などを個人を識別しない形で検証する
 - 重要な仕様変更と撤回理由をIssueやADRへ残す
+
+## ドキュメント
+
+- [`docs/release_checklist.md`](docs/release_checklist.md) — 公開前チェックリストの対応状況
+- [`docs/operation_runbook.md`](docs/operation_runbook.md) — 公開後の運用・障害対応手順
+- [`docs/license_check.md`](docs/license_check.md) — 依存パッケージとアセットのライセンス確認
+- [`docs/database_policy.md`](docs/database_policy.md) — DB選択の判断理由と移行条件
 
 ## 画面
 
