@@ -8,3 +8,5 @@ data/*.db
 !.gitkeep
 backups/*.db
 gimon.md
+node_modules/
+test-results/
