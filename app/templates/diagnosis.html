@@ -3,6 +3,7 @@
 {% block content %}
 <section class="interview-page">
   <form class="interview-card" action="/result" method="post" id="diagnosis-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <input type="hidden" name="current_hour" id="current-hour" value="12">
     <input type="hidden" name="current_month" id="current-month" value="1">
     <input type="hidden" name="current_day" id="current-day" value="1">

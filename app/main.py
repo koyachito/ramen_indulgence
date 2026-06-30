@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 import logging
 import os
 
@@ -18,6 +18,7 @@ from .rate_limit import (
     can_record,
     mark_recorded,
 )
+from .csrf import create_token, set_cookie as csrf_set_cookie, validate as csrf_validate
 from .security_headers import SecurityHeadersMiddleware
 
 logger = logging.getLogger(__name__)
@@ -55,15 +56,19 @@ async def index(request: Request):
 
 @app.get("/diagnosis", response_class=HTMLResponse)
 async def diagnosis_form(request: Request):
-    return templates.TemplateResponse(
+    csrf_token = create_token()
+    response = templates.TemplateResponse(
         request=request,
         name="diagnosis.html",
         context={
             "show_stats": False,
             "diagnosis_questions": DIAGNOSIS_QUESTIONS,
             "question_messages": QUESTION_MESSAGES,
+            "csrf_token": csrf_token,
         },
     )
+    csrf_set_cookie(response, csrf_token, request.url.scheme == "https")
+    return response
 
 
 @app.post("/result", response_class=HTMLResponse)
@@ -81,7 +86,11 @@ async def result(
     ramen_type: str = Form(...),
     forgiveness_style: str = Form(...),
     reroll: bool = Form(False),
+    csrf_token: str = Form(""),
 ):
+    if not csrf_validate(request, csrf_token):
+        logger.warning("CSRF validation failed on /result")
+        return RedirectResponse(url="/diagnosis", status_code=303)
     submitted = {
         "achievement": achievement,
         "mood": mood,
@@ -126,6 +135,7 @@ async def result(
         logger.exception("get_stats failed")
         stats = {"total": 0}
     post_text = share_text(judgment, PUBLIC_APP_URL)
+    next_csrf = create_token()
     response = templates.TemplateResponse(
         request=request,
         name="result.html",
@@ -137,10 +147,12 @@ async def result(
             "maps_url": maps_url(judgment.ramen_label),
             "total": stats["total"],
             "show_stats": True,
+            "csrf_token": next_csrf,
         },
     )
     if should_record:
         mark_recorded(response, request, RESULT_RECORD_COOKIE)
+    csrf_set_cookie(response, next_csrf, request.url.scheme == "https")
     return response
 
 
@@ -158,13 +170,24 @@ async def about(request: Request):
 
 @app.get("/hidden-confession", response_class=HTMLResponse)
 async def hidden_confession(request: Request):
-    return templates.TemplateResponse(
-        request=request, name="hidden_confession.html", context={"show_stats": True}
+    csrf_token = create_token()
+    response = templates.TemplateResponse(
+        request=request,
+        name="hidden_confession.html",
+        context={"show_stats": True, "csrf_token": csrf_token},
     )
+    csrf_set_cookie(response, csrf_token, request.url.scheme == "https")
+    return response
 
 
 @app.post("/hidden-judgment", response_class=HTMLResponse)
-async def hidden_judgment(request: Request):
+async def hidden_judgment(
+    request: Request,
+    csrf_token: str = Form(""),
+):
+    if not csrf_validate(request, csrf_token):
+        logger.warning("CSRF validation failed on /hidden-judgment")
+        return RedirectResponse(url="/", status_code=303)
     should_record = can_record(request, HIDDEN_RECORD_COOKIE)
     if should_record:
         try:
@@ -228,4 +251,4 @@ async def stats(request: Request, hour: int | None = Query(None, ge=0, le=23)):
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "time": datetime.now().isoformat()}
+    return {"status": "ok", "time": datetime.now(timezone.utc).isoformat()}

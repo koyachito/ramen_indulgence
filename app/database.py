@@ -39,11 +39,15 @@ def db_path() -> Path:
     return Path(os.getenv("RAMEN_DB_PATH", DEFAULT_DB))
 
 
+_DATABASE_URL: str | None = (
+    v
+    if (v := os.getenv("DATABASE_URL")) and v.startswith(("postgresql://", "postgres://"))
+    else None
+)
+
+
 def database_url() -> str | None:
-    value = os.getenv("DATABASE_URL")
-    if value and value.startswith(("postgresql://", "postgres://")):
-        return value
-    return None
+    return _DATABASE_URL
 
 
 def _connect():

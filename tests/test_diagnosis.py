@@ -4,7 +4,6 @@ from dataclasses import replace
 from app.diagnosis import (
     DATE_REASONS,
     RAMEN_TYPE_LABELS,
-    _date_context,
     calculate_scores,
     diagnose,
     generate_result_text,
@@ -14,6 +13,8 @@ from app.diagnosis import (
     share_text,
     x_share_url,
 )
+from app.result_generator import _date_context
+from app.scoring import determine_result_type
 from app.models import DiagnosisInput
 
 
@@ -168,8 +169,9 @@ def test_seeded_result_generation_is_reproducible():
     data = make_input()
     scores = calculate_scores(data)
 
-    first = generate_result_text(data, scores, rng=random.Random(42))
-    second = generate_result_text(data, scores, rng=random.Random(42))
+    result_type = determine_result_type(scores)
+    first = generate_result_text(data, scores, result_type, rng=random.Random(42))
+    second = generate_result_text(data, scores, result_type, rng=random.Random(42))
 
     assert first == second
 
@@ -178,8 +180,9 @@ def test_seed_changes_wording_without_changing_judgment():
     data = make_input()
     scores = calculate_scores(data)
 
-    first = generate_result_text(data, scores, rng=random.Random(1))
-    second = generate_result_text(data, scores, rng=random.Random(2))
+    result_type = determine_result_type(scores)
+    first = generate_result_text(data, scores, result_type, rng=random.Random(1))
+    second = generate_result_text(data, scores, result_type, rng=random.Random(2))
 
     assert first.full_text != second.full_text
     assert first.result_type == second.result_type

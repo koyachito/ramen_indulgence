@@ -5,6 +5,8 @@
   <img src="{{ url_for('static', path='images/thinking.png') }}" alt="考え込むシスター">
   <p>祈っています...</p>
   <span aria-hidden="true"></span>
-  <form action="/hidden-judgment" method="post" data-auto-submit="2200"></form>
+  <form action="/hidden-judgment" method="post" data-auto-submit="2200">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  </form>
 </section>
 {% endblock %}
