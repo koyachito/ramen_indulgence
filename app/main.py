@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from datetime import date, datetime
+import logging
 import os
 
 from fastapi import FastAPI, Form, Query, Request
@@ -17,6 +18,9 @@ from .rate_limit import (
     can_record,
     mark_recorded,
 )
+from .security_headers import SecurityHeadersMiddleware
+
+logger = logging.getLogger(__name__)
 
 PUBLIC_APP_URL = os.getenv(
     "APP_PUBLIC_URL", "https://ramen-indulgence.onrender.com/"
@@ -30,16 +34,22 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title="ラーメン免罪符", lifespan=lifespan)
+app.add_middleware(SecurityHeadersMiddleware)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
+    try:
+        total = get_stats()["total"]
+    except Exception:
+        logger.exception("get_stats failed")
+        total = 0
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"total": get_stats()["total"], "show_stats": False},
+        context={"total": total, "show_stats": False},
     )
 
 
@@ -105,8 +115,16 @@ async def result(
 
     should_record = not reroll and can_record(request, RESULT_RECORD_COOKIE)
     if should_record:
-        record_result(data, judgment)
-    stats = get_stats()
+        try:
+            record_result(data, judgment)
+        except Exception:
+            logger.exception("record_result failed")
+            should_record = False
+    try:
+        stats = get_stats()
+    except Exception:
+        logger.exception("get_stats failed")
+        stats = {"total": 0}
     post_text = share_text(judgment, PUBLIC_APP_URL)
     response = templates.TemplateResponse(
         request=request,
@@ -149,7 +167,11 @@ async def hidden_confession(request: Request):
 async def hidden_judgment(request: Request):
     should_record = can_record(request, HIDDEN_RECORD_COOKIE)
     if should_record:
-        record_judgment("banzai")
+        try:
+            record_judgment("banzai")
+        except Exception:
+            logger.exception("record_judgment failed")
+            should_record = False
     post_text = (
         "ラーメン免罪符の奥で、特別な祝福を授かりました。\n\n"
         "祝福結果：ラーメンばんざい！\n\n"
@@ -158,13 +180,18 @@ async def hidden_judgment(request: Request):
         f"{PUBLIC_APP_URL}\n"
         "#ラーメン免罪符"
     )
+    try:
+        hidden_total = get_stats()["total"]
+    except Exception:
+        logger.exception("get_stats failed")
+        hidden_total = 0
     response = templates.TemplateResponse(
         request=request,
         name="hidden_result.html",
         context={
             "show_stats": True,
             "share_url": x_share_url(post_text),
-            "total": get_stats()["total"],
+            "total": hidden_total,
         },
     )
     if should_record:
@@ -182,11 +209,16 @@ async def stats(request: Request, hour: int | None = Query(None, ge=0, le=23)):
         "sleep": "今日は寝ろ（幻の助言）",
         "banzai": "ラーメンばんざい！（どこかに隠された祝福）",
     }
+    try:
+        stats_data = get_stats(hour)
+    except Exception:
+        logger.exception("get_stats failed")
+        stats_data = {"total": 0, "results": {}, "ramen": {}, "ramen_total": 0, "time_bucket": "night", "time_label": "夜・深夜（20〜7時）"}
     return templates.TemplateResponse(
         request=request,
         name="stats.html",
         context={
-            "stats": get_stats(hour),
+            "stats": stats_data,
             "labels": labels,
             "ramen_types": RAMEN_TYPES,
             "show_stats": True,
